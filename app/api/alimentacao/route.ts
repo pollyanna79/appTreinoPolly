@@ -10,29 +10,89 @@ type Meal = {
   calories: number;
 };
 
-function getMealsForObjective(objective: string): Meal[] {
+function getMealsForObjective(objectiveId: number, objective: string): Meal[] {
   const normalizedObjective = objective
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
-  if (/massa|hipertrof|ganho/.test(normalizedObjective)) {
+  if (objectiveId === 1 || /massa|hipertrof|ganho/.test(normalizedObjective)) {
     return [
       { name: 'Café da manhã', description: 'Aveia com leite, banana e ovos mexidos.', calories: 500 },
       { name: 'Lanche da manhã', description: 'Iogurte natural com fruta e castanhas.', calories: 300 },
-      { name: 'Almoço', description: 'Arroz, feijão, frango grelhado e salada.', calories: 650 },
+      { name: 'Almoço', description: 'Arroz, feijão, frango grelhado e salada.', calories: 700 },
       { name: 'Lanche da tarde', description: 'Pão integral com queijo branco e uma fruta.', calories: 350 },
-      { name: 'Jantar', description: 'Batata, peixe ou frango e legumes variados.', calories: 600 },
+      { name: 'Jantar', description: 'Batata, peixe ou frango e legumes variados.', calories: 650 },
     ];
   }
 
-  if (/emagrec|perda de peso|perder peso|reduzir/.test(normalizedObjective)) {
+  if (objectiveId === 2 || /emagrec|perda de peso|perder peso|reduzir/.test(normalizedObjective)) {
     return [
-      { name: 'Café da manhã', description: 'Ovos mexidos, pão integral e uma fruta.', calories: 400 },
-      { name: 'Lanche da manhã', description: 'Iogurte natural e uma fruta da estação.', calories: 200 },
-      { name: 'Almoço', description: 'Arroz, feijão, frango grelhado e salada variada.', calories: 600 },
-      { name: 'Lanche da tarde', description: 'Fruta com um punhado pequeno de castanhas.', calories: 250 },
-      { name: 'Jantar', description: 'Omelete com legumes, salada e uma porção de batata.', calories: 500 },
+      { name: 'Café da manhã', description: 'Ovos mexidos, pão integral e uma fruta.', calories: 350 },
+      { name: 'Lanche da manhã', description: 'Iogurte natural e uma fruta da estação.', calories: 180 },
+      { name: 'Almoço', description: 'Feijão, frango grelhado, salada variada e arroz em porção moderada.', calories: 500 },
+      { name: 'Lanche da tarde', description: 'Fruta com iogurte natural.', calories: 180 },
+      { name: 'Jantar', description: 'Omelete com legumes e salada.', calories: 400 },
+    ];
+  }
+
+  if (objectiveId === 4 || /forca/.test(normalizedObjective)) {
+    return [
+      { name: 'Café da manhã', description: 'Pão integral, ovos e banana.', calories: 500 },
+      { name: 'Lanche da manhã', description: 'Iogurte natural com aveia e fruta.', calories: 300 },
+      { name: 'Almoço', description: 'Arroz, feijão, carne magra e legumes.', calories: 700 },
+      { name: 'Lanche da tarde', description: 'Sanduíche integral de frango e uma fruta.', calories: 350 },
+      { name: 'Jantar', description: 'Batata, peixe ou frango e salada.', calories: 600 },
+    ];
+  }
+
+  if (objectiveId === 5 || /resistencia/.test(normalizedObjective)) {
+    return [
+      { name: 'Café da manhã', description: 'Aveia, banana, leite e ovos.', calories: 500 },
+      { name: 'Lanche da manhã', description: 'Pão integral com queijo branco e fruta.', calories: 300 },
+      { name: 'Almoço', description: 'Arroz, feijão, frango e legumes.', calories: 700 },
+      { name: 'Lanche da tarde', description: 'Iogurte com granola e banana.', calories: 350 },
+      { name: 'Jantar', description: 'Macarrão integral com atum e vegetais.', calories: 600 },
+    ];
+  }
+
+  if (objectiveId === 6 || /saude|qualidade de vida/.test(normalizedObjective)) {
+    return [
+      { name: 'Café da manhã', description: 'Pão integral, queijo branco e uma fruta.', calories: 400 },
+      { name: 'Lanche da manhã', description: 'Iogurte natural com aveia.', calories: 200 },
+      { name: 'Almoço', description: 'Arroz, feijão, proteína grelhada e salada colorida.', calories: 600 },
+      { name: 'Lanche da tarde', description: 'Fruta da estação e castanhas.', calories: 200 },
+      { name: 'Jantar', description: 'Omelete com legumes e uma porção de batata.', calories: 500 },
+    ];
+  }
+
+  if (objectiveId === 7 || /condicionamento/.test(normalizedObjective)) {
+    return [
+      { name: 'Café da manhã', description: 'Ovos, pão integral e mamão.', calories: 450 },
+      { name: 'Lanche da manhã', description: 'Banana com iogurte natural.', calories: 250 },
+      { name: 'Almoço', description: 'Arroz, feijão, frango e legumes variados.', calories: 600 },
+      { name: 'Lanche da tarde', description: 'Sanduíche integral com queijo branco.', calories: 250 },
+      { name: 'Jantar', description: 'Peixe ou frango, legumes e arroz.', calories: 500 },
+    ];
+  }
+
+  if (objectiveId === 8 || /reabilitacao|prevencao/.test(normalizedObjective)) {
+    return [
+      { name: 'Café da manhã', description: 'Aveia com leite, fruta e ovos.', calories: 450 },
+      { name: 'Lanche da manhã', description: 'Iogurte natural com fruta.', calories: 250 },
+      { name: 'Almoço', description: 'Arroz, feijão, proteína grelhada e vegetais.', calories: 600 },
+      { name: 'Lanche da tarde', description: 'Pão integral com queijo branco.', calories: 250 },
+      { name: 'Jantar', description: 'Sopa de legumes com frango desfiado e batata.', calories: 500 },
+    ];
+  }
+
+  if (objectiveId === 3 || /recomposicao/.test(normalizedObjective)) {
+    return [
+      { name: 'Café da manhã', description: 'Ovos mexidos, pão integral e uma fruta.', calories: 450 },
+      { name: 'Lanche da manhã', description: 'Iogurte natural com aveia.', calories: 250 },
+      { name: 'Almoço', description: 'Arroz, feijão, frango grelhado e salada.', calories: 600 },
+      { name: 'Lanche da tarde', description: 'Queijo branco com fruta.', calories: 250 },
+      { name: 'Jantar', description: 'Peixe ou frango, legumes e batata.', calories: 500 },
     ];
   }
 
@@ -78,6 +138,7 @@ export async function GET(request: Request) {
       }
 
       const { objetivo_id: objectiveId, objetivo } = user.recordset[0];
+      const mealsForGoal = getMealsForObjective(Number(objectiveId), String(objetivo));
       await new sql.Request(transaction).query(`
         DECLARE @lockResult int;
         EXEC @lockResult = sys.sp_getapplock
@@ -89,21 +150,34 @@ export async function GET(request: Request) {
           THROW 51000, 'Não foi possível preparar o menu alimentar.', 1;
       `);
 
-      for (const meal of getMealsForObjective(String(objetivo))) {
+      for (const meal of mealsForGoal) {
         await new sql.Request(transaction)
           .input('objectiveId', sql.Int, Number(objectiveId))
           .input('meal', sql.VarChar(50), meal.name)
           .input('description', sql.VarChar(800), meal.description)
           .input('calories', sql.Int, meal.calories)
           .query(`
-            IF NOT EXISTS (
-              SELECT 1
+            UPDATE dbo.PlanosAlimentares
+            SET descricao = @description, calorias_aprox = @calories
+            WHERE id = (
+              SELECT MIN(id)
               FROM dbo.PlanosAlimentares
               WHERE objetivo_id = @objectiveId AND refeicao = @meal
-            )
+            );
+
+            IF @@ROWCOUNT = 0
               INSERT INTO dbo.PlanosAlimentares
                 (objetivo_id, refeicao, descricao, calorias_aprox)
               VALUES (@objectiveId, @meal, @description, @calories);
+
+            DELETE FROM dbo.PlanosAlimentares
+            WHERE objetivo_id = @objectiveId
+              AND refeicao = @meal
+              AND id <> (
+                SELECT MIN(id)
+                FROM dbo.PlanosAlimentares
+                WHERE objetivo_id = @objectiveId AND refeicao = @meal
+              );
           `);
       }
 

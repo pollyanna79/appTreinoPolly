@@ -17,7 +17,7 @@ export default function Treino({
 }) {
   const [plano, setPlano] = useState<PlanoTreino | null>(null);
   const [treinoAtivo, setTreinoAtivo] = useState<number | null>(null);
-  const [diasConcluidos, setDiasConcluidos] = useState(user.dias_concluidos ?? 0);
+  const [concluidoHoje, setConcluidoHoje] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [concluindo, setConcluindo] = useState(false);
   const [erro, setErro] = useState('');
@@ -32,6 +32,7 @@ export default function Treino({
         if (active) {
           setPlano(data);
           setTreinoAtivo(data.treinoSelecionado);
+          setConcluidoHoje(data.treinoConcluidoHoje);
           setErro('');
         }
       })
@@ -58,17 +59,31 @@ export default function Treino({
   const concluirTreino = async () => {
     setConcluindo(true);
     try {
-      const progress = await apiService.concluirTreino(user.id);
-      setDiasConcluidos(progress.dias_concluidos);
+      if (!activeWorkout || concluidoHoje) {
+        return;
+      }
+
+      const progress = await apiService.concluirTreino(user.id, activeWorkout.id);
       setUser((currentUser) =>
         currentUser ? { ...currentUser, ...progress } : currentUser,
       );
+      setPlano((currentPlan) =>
+        currentPlan
+          ? {
+              ...currentPlan,
+              treinosNoCombo: progress.treinosNoCombo,
+              treinoConcluidoHoje: true,
+            }
+          : currentPlan,
+      );
+      setConcluidoHoje(true);
 
       if (progress.faseAlterada) {
         try {
           const nextPlan = await apiService.carregarTreino(user.id);
           setPlano(nextPlan);
           setTreinoAtivo(nextPlan.treinoSelecionado);
+          setConcluidoHoje(nextPlan.treinoConcluidoHoje);
         } catch {
           setTentativa((current) => current + 1);
         }
@@ -139,22 +154,22 @@ export default function Treino({
         <div className="workout-heading-actions">
           <div
             className="progress-panel"
-            aria-label={`${diasConcluidos} de 90 dias concluídos`}
+            aria-label={`${plano.treinosNoCombo} de 60 treinos concluídos neste combo`}
           >
             <div className="progress-caption">
-              <span>Jornada de 90 dias</span>
-              <strong>{diasConcluidos}/90</strong>
+              <span>Treinos concluídos neste combo</span>
+              <strong>{plano.treinosNoCombo}/60</strong>
             </div>
             <div
               className="progress-track"
               role="progressbar"
-              aria-valuenow={diasConcluidos}
+              aria-valuenow={plano.treinosNoCombo}
               aria-valuemin={0}
-              aria-valuemax={90}
+              aria-valuemax={60}
             >
               <div
                 className="progress-fill"
-                style={{ width: `${Math.min((diasConcluidos / 90) * 100, 100)}%` }}
+                style={{ width: `${Math.min((plano.treinosNoCombo / 60) * 100, 100)}%` }}
               />
             </div>
           </div>
@@ -258,9 +273,13 @@ export default function Treino({
             type="button"
             className="primary-button finish-button"
             onClick={concluirTreino}
-            disabled={concluindo}
+            disabled={concluindo || concluidoHoje}
           >
-            {concluindo ? 'REGISTRANDO TREINO...' : 'CONCLUIR TREINO DE HOJE'}
+            {concluindo
+              ? 'REGISTRANDO TREINO...'
+              : concluidoHoje
+                ? 'TREINO DE HOJE JÁ CONCLUÍDO'
+                : 'CONCLUIR TREINO DE HOJE'}
           </button>
         </section>
       )}

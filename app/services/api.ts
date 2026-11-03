@@ -36,6 +36,8 @@ export interface PlanoTreino {
   objetivo: string;
   frequenciaSemanal: number;
   fase: number;
+  treinosNoCombo: number;
+  treinoConcluidoHoje: boolean;
   diaAtual: string;
   treinoSelecionado: number;
   treinos: TreinoDia[];
@@ -45,6 +47,7 @@ export interface ProgressoTreino {
   dias_concluidos: number;
   fase_combo: number;
   faseAlterada: boolean;
+  treinosNoCombo: number;
   message: string;
 }
 
@@ -134,6 +137,6 @@ export const apiService = {
       objetivoId,
       frequenciaSemanal,
     }),
-  concluirTreino: (userId: number) =>
-    post<ProgressoTreino>('/treino/concluir', { userId }),
+  concluirTreino: (userId: number, comboId: number) =>
+    post<ProgressoTreino>('/treino/concluir', { userId, comboId }),
 };

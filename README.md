@@ -20,21 +20,35 @@ de `DB_INSTANCE`. Não configure os dois juntos.
 
 O usuário SQL precisa ter permissão de leitura e gravação nas tabelas
 `dbo.Usuarios`, `dbo.Exercicios`, `dbo.CombosTreino`, `dbo.ComboExercicios`
-e `dbo.PlanosAlimentares`, além de leitura em `dbo.Objetivos`. A aplicação usa
+e `dbo.PlanosAlimentares`, além de leitura em `dbo.Objetivos`. Na primeira
+consulta ao treino, a aplicação também cria `dbo.UsuarioRotacaoTreinos`; para
+isso, o usuário SQL precisa poder criar tabelas e índices no schema `dbo`.
+A tabela `dbo.UsuarioTreinosConcluidos` também é criada automaticamente.
+A aplicação usa
 as colunas `id`, `nome`, `email`, `senha`,
 `objetivo_id`, `frequencia_semanal`, `dias_concluidos` e `fase_combo`.
 As opções da tela de objetivos são consultadas em `dbo.Objetivos`; cadastro,
 login, preferências e conclusão de treino usam as rotas `/api` do Next.js.
 Ao salvar as preferências, o app grava objetivo e frequência em `dbo.Usuarios`
-e cria os exercícios e os dias do plano escolhido em `dbo.Exercicios`,
-`dbo.CombosTreino` e `dbo.ComboExercicios`. O catálogo só insere registros
-ausentes; os planos aparecem após entrar com uma conta configurada.
+e sincroniza os exercícios e os dias do plano escolhido em `dbo.Exercicios`,
+`dbo.CombosTreino` e `dbo.ComboExercicios`. Os planos aparecem após entrar com
+uma conta configurada.
 Para instâncias nomeadas, habilite TCP/IP no SQL Server Configuration Manager
 e, se necessário, o SQL Server Browser.
-Ao concluir 90 treinos, a nova fase e seus exercícios são criados na mesma
-transação que atualiza o progresso. A tela Alimentação consulta
-`dbo.PlanosAlimentares` e cria sugestões gerais para o objetivo selecionado
-quando ainda não há refeições cadastradas.
+A aplicação oferece 38 exercícios com pesos livres, máquinas, cabos e
+movimentos com peso corporal. Séries, repetições e orientação de carga variam
+conforme o objetivo salvo; a carga continua sendo uma recomendação por esforço,
+pois o app não conhece o peso que cada pessoa consegue levantar com segurança.
+Cada usuário recebe um combo até concluir 60 treinos. A troca e o histórico são
+gravados em `dbo.UsuarioRotacaoTreinos`, e o mesmo conjunto de exercícios não é
+atribuído novamente ao usuário antes de ele concluir 180 treinos desde o uso
+anterior. Só é registrado um treino concluído por usuário em cada data. Os
+registros de combos em `dbo.CombosTreino` e `dbo.ComboExercicios` são
+compartilhados entre usuários; o histórico da rotação é individual.
+
+A tela Alimentação mantém uma sugestão geral específica para cada objetivo e
+remove refeições duplicadas ou antigas daquele objetivo ao sincronizar o menu.
+As calorias são estimativas fixas, não uma meta individual ou dieta clínica.
 
 ## Executar
 

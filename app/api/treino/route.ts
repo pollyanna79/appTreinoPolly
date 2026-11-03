@@ -4,8 +4,9 @@ import {
   getDatabasePool,
 } from '@/app/services/database';
 import {
-  ensureWorkoutPlan,
+  hasCompletedWorkoutToday,
   getWeekdayName,
+  prepareUserWorkoutRotation,
 } from '@/app/services/workoutCatalog';
 
 const weekdayNames = [
@@ -36,6 +37,8 @@ export async function GET(request: Request) {
       frequency: number;
       phase: number;
       objective: string;
+      workoutsInCombo: number;
+      completedToday: boolean;
     };
 
     try {
@@ -45,6 +48,7 @@ export async function GET(request: Request) {
           SELECT
             u.objetivo_id,
             u.frequencia_semanal,
+            ISNULL(u.dias_concluidos, 0) AS dias_concluidos,
             CASE
               WHEN ISNULL(u.fase_combo, 0) < 1 THEN 1
               ELSE u.fase_combo
@@ -69,19 +73,24 @@ export async function GET(request: Request) {
         );
       }
 
-      planDetails = {
-        objectiveId: Number(savedUser.objetivo_id),
-        frequency: Number(savedUser.frequencia_semanal),
-        phase: Number(savedUser.fase_combo),
-        objective: savedUser.objetivo,
-      };
-
-      await ensureWorkoutPlan(
+      const objectiveId = Number(savedUser.objetivo_id);
+      const frequency = Number(savedUser.frequencia_semanal);
+      const rotation = await prepareUserWorkoutRotation(
         transaction,
-        planDetails.objectiveId,
-        planDetails.frequency,
-        planDetails.phase,
+        userId,
+        objectiveId,
+        frequency,
+        Number(savedUser.fase_combo),
+        Number(savedUser.dias_concluidos),
       );
+      planDetails = {
+        objectiveId,
+        frequency,
+        phase: rotation.phase,
+        objective: savedUser.objetivo,
+        workoutsInCombo: rotation.workoutsInCombo,
+        completedToday: await hasCompletedWorkoutToday(transaction, userId),
+      };
       await transaction.commit();
     } catch (error) {
       try {
@@ -171,6 +180,8 @@ export async function GET(request: Request) {
       objetivo: planDetails.objective,
       frequenciaSemanal: planDetails.frequency,
       fase: planDetails.phase,
+      treinosNoCombo: planDetails.workoutsInCombo,
+      treinoConcluidoHoje: planDetails.completedToday,
       diaAtual: weekdayNames[todayWeekday],
       treinoSelecionado: nextWorkout.id,
       treinos,

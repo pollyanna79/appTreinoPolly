@@ -69,3 +69,104 @@ https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.p
 https://wger.de/media/exercise-images/458/902e6836-394e-458b-b94e-101d714294e2.png
 
 O movimento Dead bug utiliza a ilustração original já incluída no projeto.
+
+Imagens adicionais de movimentos
+
+Os pares adicionados foram redimensionados para uso local. As licenças abaixo
+e os links apontam para as fontes originais no catálogo wger.
+
+Benchpress Dumbbells — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/97/Dumbbell-bench-press-1.png
+https://wger.de/media/exercise-images/75/7b700f5d-17fc-41a9-bd41-e98e45c15768.png
+
+Chest Press — roneydya — CC BY-SA 3.0
+https://wger.de/media/exercise-images/129/b263c968-e067-4750-916a-d8758a7df23e.webp
+https://wger.de/media/exercise-images/129/dbad8cd0-5eeb-4de2-8d9e-80c7770735fd.png
+
+Fly With Cable — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/122/Incline-cable-flyes-1.png
+https://wger.de/media/exercise-images/122/Incline-cable-flyes-2.png
+
+Butterfly — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/98/Butterfly-machine-2.png
+https://wger.de/media/exercise-images/98/Butterfly-machine-1.png
+
+Unilateral Cable Row — technofer and Rottekongen — CC BY-SA 4.0
+https://wger.de/media/exercise-images/1621/ca1bc68d-9c36-4dd3-8ec4-496c57b5c564.jpg
+https://wger.de/media/exercise-images/1621/1bf3ee54-207c-4b53-b057-15adc1dd6128.png
+
+Seated Cable Row — Franpol — CC BY-SA 4.0
+https://wger.de/media/exercise-images/1117/2555c4c3-a84d-47db-b83b-cbf721f12e45.png
+https://wger.de/media/exercise-images/1117/e74255c0-67a0-4309-b78d-2d79e6ff8c11.png
+
+Close-grip Lat Pull Down — Franpol — CC BY-SA 3.0
+https://wger.de/media/exercise-images/158/0d51a0f2-622f-434b-beb8-1a003c54712a.png
+https://wger.de/media/exercise-images/158/02e8a7c3-dc67-434e-a4bc-77fdecf84b49.webp
+
+Scapular Pushups — author not identified in the source — CC BY-SA 4.0
+https://wger.de/media/exercise-images/2681/d4f89553-c920-4748-8302-9bd30b4f4c4d.png
+https://wger.de/media/exercise-images/2681/c787822b-e5ad-415b-a686-af2f18133b3c.png
+
+Leg Press on Hackenschmidt Machine — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/130/Narrow-stance-hack-squats-1-1024x721.png
+https://wger.de/media/exercise-images/130/Narrow-stance-hack-squats-2-1024x721.png
+
+Front Squats — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/191/Front-squat-1-857x1024.png
+https://wger.de/media/exercise-images/191/Front-squat-2-857x1024.png
+
+Leg Extension — Franpol — CC0 1.0
+https://wger.de/media/exercise-images/369/78c915d1-e46d-4d30-8124-65d68664c3ef.png
+https://wger.de/media/exercise-images/369/4d621b17-f6cb-4107-97c0-9f44e9a2dbc6.webp
+
+Leg Curls (laying) and Leg Curls (sitting) — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/154/lying-leg-curl-machine-large-1.png
+https://wger.de/media/exercise-images/154/lying-leg-curl-machine-large-2.png
+https://wger.de/media/exercise-images/117/seated-leg-curl-large-1.png
+https://wger.de/media/exercise-images/117/seated-leg-curl-large-2.png
+
+Rack Deadlift — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/161/Dead-lifts-1.png
+https://wger.de/media/exercise-images/161/Dead-lifts-2.png
+
+Standing Calf Raises — clafal — CC BY-SA 3.0
+https://wger.de/media/exercise-images/622/9a429bd0-afd3-4ad0-8043-e9beec901c81.jpeg
+https://wger.de/media/exercise-images/622/d6d57067-97de-462e-a8bb-15228d730323.jpeg
+
+Shoulder Press, on Machine — wger.de — CC BY-SA 3.0
+https://wger.de/media/exercise-images/53/Shoulder-press-machine-2.png
+https://wger.de/media/exercise-images/53/Shoulder-press-machine-1.png
+
+Incline Bench Reverse Fly — cshep442 — CC BY-SA 4.0
+https://wger.de/media/exercise-images/828/2e959dab-f39b-4c7c-9063-eb43064ab5eb.png
+https://wger.de/media/exercise-images/828/abfc7700-fadf-4f2d-ac84-e045e590a2fe.png
+
+Biceps Curls With Dumbbell, Hammer Curls and Preacher Curls — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/81/Biceps-curl-1.png
+https://wger.de/media/exercise-images/81/Biceps-curl-2.png
+https://wger.de/media/exercise-images/86/Bicep-hammer-curl-1.png
+https://wger.de/media/exercise-images/86/Bicep-hammer-curl-2.png
+https://wger.de/media/exercise-images/193/Preacher-curl-3-1.png
+https://wger.de/media/exercise-images/193/Preacher-curl-3-2.png
+
+Bench Press Narrow Grip and Dips Between Two Benches — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/88/Narrow-grip-bench-press-1.png
+https://wger.de/media/exercise-images/76/9abec4e4-90ba-44f9-9e6e-5e35f7273078.png
+https://wger.de/media/exercise-images/83/Bench-dips-1.png
+https://wger.de/media/exercise-images/83/Bench-dips-2.png
+
+Crunches — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/91/Crunches-1.png
+https://wger.de/media/exercise-images/91/Crunches-2.png
+
+Leg Raises, Lying — Everkinetic — CC BY-SA 3.0
+https://wger.de/media/exercise-images/125/Leg-raises-1.png
+https://wger.de/media/exercise-images/125/Leg-raises-2.png
+
+Dumbbell Lunges Walking — Everkinetic and nishant0712 — CC BY-SA 3.0
+https://wger.de/media/exercise-images/113/Walking-lunges-1.png
+https://wger.de/media/exercise-images/206/6ec66efd-e74f-4142-bed1-0a0ac74e3294.png
+
+Pistol Squat — wakanda90 — CC BY-SA 3.0
+https://wger.de/media/exercise-images/456/3b681e59-377b-40db-9113-ca5873ce084b.jpg
+https://wger.de/media/exercise-images/456/c51d875b-0c07-495e-a7cf-08893a9f125d.jpg
