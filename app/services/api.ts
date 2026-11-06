@@ -34,6 +34,7 @@ export interface TreinoDia {
 
 export interface PlanoTreino {
   objetivo: string;
+  aerobico: string | null;
   frequenciaSemanal: number;
   fase: number;
   treinosNoCombo: number;
@@ -56,10 +57,19 @@ export interface Refeicao {
   refeicao: string;
   descricao: string;
   calorias_aprox: number | null;
+  opcoes: OpcaoRefeicao[];
+}
+
+export interface OpcaoRefeicao {
+  nivel: string;
+  icone: string;
+  titulo: string;
+  descricao: string;
 }
 
 export interface PlanoAlimentar {
   objetivo: string;
+  orientacaoObjetivo: string;
   refeicoes: Refeicao[];
   caloriasAproximadas: number;
   observacao: string;

@@ -178,6 +178,16 @@ export async function GET(request: Request) {
 
     return Response.json({
       objetivo: planDetails.objective,
+      aerobico:
+        planDetails.objectiveId === 2
+          ? 'Inclua caminhada rápida, bicicleta ou elíptico por 20 a 30 minutos, de 2 a 4 vezes na semana, em intensidade moderada. Comece pelo mínimo confortável e aumente aos poucos.'
+          : planDetails.objectiveId === 3
+            ? 'Se a recuperação estiver boa, faça 15 a 25 minutos de caminhada ou bicicleta leve a moderada, 2 a 3 vezes na semana.'
+            : planDetails.objectiveId === 5
+              ? 'Priorize 2 a 3 sessões semanais de caminhada rápida, corrida leve ou bicicleta. Alterne dias fáceis e moderados para preservar a recuperação.'
+              : planDetails.objectiveId === 6 || planDetails.objectiveId === 7
+                ? 'Caminhada, bicicleta ou dança em intensidade confortável a moderada são boas opções. Distribua as sessões na semana e aumente a duração gradualmente.'
+                : null,
       frequenciaSemanal: planDetails.frequency,
       fase: planDetails.phase,
       treinosNoCombo: planDetails.workoutsInCombo,

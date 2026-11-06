@@ -221,7 +221,7 @@ export default function Treino({
           </div>
 
           <div className="exercise-grid">
-            {activeWorkout.exercicios.map((exercise, index) => (
+            {activeWorkout.exercicios.map((exercise) => (
               <article key={exercise.id} className="exercise-card">
                 <div className="exercise-image-grid">
                   {exercise.imagem.split('|').map((image, imageIndex, images) => (
@@ -230,23 +230,17 @@ export default function Treino({
                         src={image}
                         alt={
                           images.length > 1
-                            ? `${exercise.nome}, posição ${imageIndex === 0 ? 'inicial' : 'final'}`
+                            ? `${exercise.nome}, demonstração ${imageIndex + 1} de ${images.length}`
                             : `Demonstração do movimento: ${exercise.nome}`
                         }
                         width={480}
                         height={360}
                         className="exercise-image"
                       />
-                      {images.length > 1 && (
-                        <figcaption>{imageIndex === 0 ? 'INÍCIO' : 'FINAL'}</figcaption>
-                      )}
                     </figure>
                   ))}
                 </div>
                 <div className="exercise-info">
-                  <p className="exercise-number">
-                    Exercício {String(index + 1).padStart(2, '0')} · {exercise.grupoMuscular}
-                  </p>
                   <h3 className="exercise-name">{exercise.nome}</h3>
                   <div className="exercise-details">
                     <span className="detail-chip">{exercise.repeticoes}</span>
@@ -256,6 +250,17 @@ export default function Treino({
               </article>
             ))}
           </div>
+
+          {plano.aerobico && (
+            <aside className="cardio-panel">
+              <span className="cardio-icon" aria-hidden="true">♡</span>
+              <div>
+                <p className="eyebrow">Complemento aeróbico</p>
+                <h3>Movimente-se no seu ritmo</h3>
+                <p>{plano.aerobico}</p>
+              </div>
+            </aside>
+          )}
 
           <p className="training-note">
             Use uma carga adequada ao seu nível e mantenha a execução controlada.

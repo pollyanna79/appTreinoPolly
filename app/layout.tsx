@@ -8,8 +8,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "const tema = localStorage.getItem('treino-theme'); if (tema === 'light' || tema === 'dark') document.documentElement.dataset.theme = tema;",
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

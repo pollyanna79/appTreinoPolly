@@ -91,8 +91,12 @@ export default function Alimentacao({
 
       {plano && (
         <>
+          <section className="nutrition-focus">
+            <p className="eyebrow">Estratégia para {plano.objetivo}</p>
+            <p>{plano.orientacaoObjetivo}</p>
+          </section>
           <div className="food-summary">
-            <span>Estimativa do menu diário</span>
+            <span>Estimativa do menu de referência</span>
             <strong>~{plano.caloriasAproximadas} kcal</strong>
           </div>
           <div className="meal-list">
@@ -104,7 +108,19 @@ export default function Alimentacao({
                     <span>{meal.calorias_aprox} kcal aprox.</span>
                   )}
                 </div>
-                <p>{meal.descricao}</p>
+                <p className="meal-description">{meal.descricao}</p>
+                <div className="meal-options">
+                  {meal.opcoes.map((option) => (
+                    <div className="meal-option" key={option.nivel}>
+                      <span className="meal-option-icon" aria-hidden="true">{option.icone}</span>
+                      <div>
+                        <span className="meal-option-level">{option.nivel}</span>
+                        <h3>{option.titulo}</h3>
+                        <p>{option.descricao}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </article>
             ))}
           </div>

@@ -10,6 +10,63 @@ type Meal = {
   calories: number;
 };
 
+type MealOption = {
+  nivel: string;
+  icone: string;
+  titulo: string;
+  descricao: string;
+};
+
+function getMealOptions(meal: string): MealOption[] {
+  if (meal === 'Café da manhã') {
+    return [
+      { nivel: 'Econômica', icone: '🍌', titulo: 'Cuscuz, ovos e banana', descricao: 'Cuscuz com 2 ovos e uma banana da estação.' },
+      { nivel: 'Equilibrada', icone: '🥣', titulo: 'Aveia, leite e ovos', descricao: 'Aveia com leite e banana, acompanhada de 2 ovos.' },
+      { nivel: 'Completa', icone: '🍓', titulo: 'Iogurte, frutas e aveia', descricao: 'Iogurte natural, frutas, aveia e ovos mexidos.' },
+    ];
+  }
+  if (meal === 'Lanche da manhã') {
+    return [
+      { nivel: 'Econômica', icone: '🍎', titulo: 'Fruta com amendoim', descricao: 'Uma fruta da estação com um punhado pequeno de amendoim.' },
+      { nivel: 'Equilibrada', icone: '🥛', titulo: 'Iogurte com aveia', descricao: 'Iogurte natural com aveia e fruta picada.' },
+      { nivel: 'Completa', icone: '🧀', titulo: 'Queijo, fruta e castanhas', descricao: 'Queijo branco, fruta fresca e algumas castanhas.' },
+    ];
+  }
+  if (meal === 'Almoço') {
+    return [
+      { nivel: 'Econômica', icone: '🍛', titulo: 'Arroz, feijão e ovos', descricao: 'Arroz, feijão, 2 ovos e legumes ou verduras da estação.' },
+      { nivel: 'Equilibrada', icone: '🍗', titulo: 'Frango e prato feito', descricao: 'Arroz, feijão, frango grelhado e salada variada.' },
+      { nivel: 'Completa', icone: '🐟', titulo: 'Peixe, grãos e vegetais', descricao: 'Peixe, arroz integral ou quinoa, legumes e salada.' },
+    ];
+  }
+  if (meal === 'Lanche da tarde') {
+    return [
+      { nivel: 'Econômica', icone: '🥚', titulo: 'Pão com ovo', descricao: 'Pão (integral ou comum) com ovo e tomate.' },
+      { nivel: 'Equilibrada', icone: '🥪', titulo: 'Sanduíche de frango', descricao: 'Pão integral com frango desfiado e folhas.' },
+      { nivel: 'Completa', icone: '🥑', titulo: 'Iogurte, fruta e sementes', descricao: 'Iogurte natural com fruta, aveia e chia.' },
+    ];
+  }
+  return [
+    { nivel: 'Econômica', icone: '🍳', titulo: 'Omelete com legumes', descricao: 'Omelete com legumes da estação e batata ou mandioca.' },
+    { nivel: 'Equilibrada', icone: '🍲', titulo: 'Frango, arroz e vegetais', descricao: 'Frango ou sardinha com arroz, feijão e vegetais.' },
+    { nivel: 'Completa', icone: '🐠', titulo: 'Peixe e acompanhamento', descricao: 'Peixe, batata ou arroz e uma porção generosa de vegetais.' },
+  ];
+}
+
+function getObjectiveGuidance(objectiveId: number): string {
+  const guidance: Record<number, string> = {
+    1: 'Para favorecer o ganho de massa, distribua fontes de proteína ao longo do dia e combine-as com carboidratos que deem energia para treinar. O superávit e as porções devem ser ajustados ao seu corpo.',
+    2: 'Para perda de peso, priorize refeições saciantes com proteína, feijão, frutas e vegetais. Evite cortes extremos: um déficit moderado e sustentável é mais importante que pular refeições.',
+    3: 'Para recomposição corporal, mantenha proteína em todas as refeições, inclua vegetais e ajuste carboidratos em torno dos treinos sem excluir grupos alimentares.',
+    4: 'Para força, mantenha refeições regulares com proteína e carboidratos suficientes para sustentar o treino e a recuperação.',
+    5: 'Para resistência, dê atenção aos carboidratos antes e depois das sessões e mantenha hidratação ao longo do dia.',
+    6: 'Para saúde e qualidade de vida, varie frutas, verduras, feijões e fontes de proteína; prefira uma rotina que consiga manter.',
+    7: 'Para condicionamento, combine refeições variadas com hidratação e energia suficiente para se movimentar e recuperar.',
+    8: 'Durante a reabilitação, priorize refeições variadas e suficientes. Restrições, suplementação ou ajustes clínicos devem ser definidos com seu profissional de saúde.',
+  };
+  return guidance[objectiveId] ?? 'Monte refeições variadas com uma fonte de proteína, alimentos ricos em fibras e porções adequadas à sua rotina.';
+}
+
 function getMealsForObjective(objectiveId: number, objective: string): Meal[] {
   const normalizedObjective = objective
     .normalize('NFD')
@@ -199,9 +256,13 @@ export async function GET(request: Request) {
 
       await transaction.commit();
 
-      const refeicoes = meals.recordset;
+      const refeicoes = meals.recordset.map((meal) => ({
+        ...meal,
+        opcoes: getMealOptions(String(meal.refeicao)),
+      }));
       return Response.json({
         objetivo,
+        orientacaoObjetivo: getObjectiveGuidance(Number(objectiveId)),
         refeicoes,
         caloriasAproximadas: refeicoes.reduce(
           (total: number, meal: { calorias_aprox: number | null }) =>

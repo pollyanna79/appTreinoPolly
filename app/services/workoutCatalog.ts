@@ -121,6 +121,22 @@ const phaseFourSessionsByKey = {
   'legs-b': ['hack-squat', 'mesa-flexora', 'levantamento-rack', 'agachamento-pistol', 'elevacao-pernas'],
 } as const;
 
+const extraExerciseBySession: Record<string, string[]> = {
+  'full-a': ['rosca-alternada', 'panturrilha'],
+  'full-b': ['elevacao-lateral', 'panturrilha'],
+  'full-c': ['mesa-flexora', 'prancha'],
+  'upper-a': ['rosca-martelo', 'abdominal-crunch'],
+  'lower-a': ['panturrilha', 'elevacao-pernas'],
+  'upper-b': ['triceps-banco', 'abdominal-crunch'],
+  'lower-b': ['panturrilha', 'prancha'],
+  'push-a': ['triceps-testa', 'elevacao-lateral'],
+  'pull-a': ['rosca-martelo', 'prancha'],
+  'legs-a': ['panturrilha', 'elevacao-pernas'],
+  'push-b': ['triceps-banco', 'crossover'],
+  'pull-b': ['rosca-scott', 'abdominal-crunch'],
+  'legs-b': ['panturrilha', 'prancha'],
+};
+
 const weekdayNames: Record<number, string> = {
   1: 'Segunda-feira',
   2: 'Terça-feira',
@@ -314,7 +330,17 @@ export async function ensureWorkoutPlan(
 
     const session = sessionKeys[index];
     const exerciseKeys = phaseCatalog[session as keyof typeof phaseCatalog];
-    const desiredExercises = exerciseKeys.map((exerciseKey) => {
+    const desiredExerciseKeys: string[] = [...exerciseKeys];
+    if (desiredExerciseKeys.length < 6) {
+      const additionalExercise = extraExerciseBySession[session]?.find(
+        (exerciseKey) => !desiredExerciseKeys.includes(exerciseKey),
+      );
+      if (!additionalExercise) {
+        throw new Error(`Não foi possível completar o treino "${session}" com seis exercícios.`);
+      }
+      desiredExerciseKeys.push(additionalExercise);
+    }
+    const desiredExercises = desiredExerciseKeys.map((exerciseKey) => {
       const exercise = exercises.find((entry) => entry.key === exerciseKey);
       const exerciseId = exercise ? exerciseIds.get(exercise.name) : undefined;
       if (!exerciseId) {
@@ -476,6 +502,7 @@ export async function prepareUserWorkoutRotation(
     Number(active.frequencia_semanal) === frequency &&
     Number(active.treinos_concluidos) < 60
   ) {
+    await ensureWorkoutPlan(transaction, objectiveId, frequency, Number(active.fase));
     return {
       phase: Number(active.fase),
       workoutsInCombo: Math.max(0, Number(active.treinos_concluidos)),

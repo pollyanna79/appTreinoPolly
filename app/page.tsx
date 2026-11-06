@@ -25,6 +25,13 @@ export default function Page() {
   const [tela, setTela] = useState<Tela>('login');
   const [user, setUser] = useState<Usuario | null>(null);
 
+  const alternarTema = () => {
+    const temaAtual = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+    const proximoTema = temaAtual === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = proximoTema;
+    localStorage.setItem('treino-theme', proximoTema);
+  };
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -33,6 +40,16 @@ export default function Page() {
           <p className="brand-name">TREINO+</p>
           <p className="brand-caption">Consistência que transforma</p>
         </div>
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={alternarTema}
+          aria-label="Alternar entre tema claro e escuro"
+          title="Alternar entre tema claro e escuro"
+        >
+          <span aria-hidden="true">◐</span>
+          Alternar tema
+        </button>
       </header>
 
       <section className="screen-content">
