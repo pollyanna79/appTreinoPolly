@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">INÍCIO</text><text x="595" y="52">AGACHAMENTO</text></g>
+  <g fill="none" stroke="#17343a" stroke-linecap="round" stroke-linejoin="round" stroke-width="12">
+    <circle cx="200" cy="104" r="25" fill="#d9efeb"/><path d="M200 130v104m0-78-47 49m47-49 47 49m-47 29-39 87m39-87 46 86"/>
+    <circle cx="590" cy="104" r="25" fill="#d9efeb"/><path d="m590 130-8 91m0-56-42 32m42-32 44 31m-44 25-66 37m66-37 74 35"/>
+  </g>
+  <g fill="#159a8c" stroke="#17343a" stroke-width="7"><rect x="177" y="174" width="46" height="38" rx="9"/><rect x="567" y="158" width="46" height="38" rx="9"/></g>
+  <path d="M56 344h287M446 344h287" stroke="#9cabad" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -23,6 +23,8 @@ const weekdayNames = [
 ];
 
 const validWorkoutFocuses: WorkoutFocus[] = [
+  'superiores',
+  'inferiores',
   'pernas-gluteos',
   'superiores-empurrar',
   'superiores-puxar',
@@ -159,6 +161,7 @@ export async function GET(request: Request) {
         id: number;
         diaSemana: number;
         nomeDia: string;
+        diaAerobico: boolean;
         exercicios: Array<{
           id: number;
           nome: string;
@@ -177,6 +180,7 @@ export async function GET(request: Request) {
           id: row.comboId,
           diaSemana: row.diaSemana,
           nomeDia: getWeekdayName(row.diaSemana),
+          diaAerobico: false,
           exercicios: [],
         };
         workoutsByWeekday.set(row.diaSemana, workout);
@@ -205,7 +209,9 @@ export async function GET(request: Request) {
         planDetails.frequency,
         index,
         planDetails.focus,
+        planDetails.phase,
       )}`;
+      workout.diaAerobico = index === treinos.length - 1;
     });
 
     const todayWeekday = new Date().getDay();
@@ -216,17 +222,7 @@ export async function GET(request: Request) {
       objetivo: planDetails.objective,
       focoTreino: planDetails.focus,
       aerobico:
-        planDetails.objectiveId === 2
-          ? 'Faça caminhada rápida, bicicleta ou elíptico por 20 a 30 minutos, em 3 a 4 dias da semana. Você pode distribuir as sessões nos dias de descanso ou ao final da força; comece pelo mínimo confortável e aumente aos poucos.'
-          : planDetails.objectiveId === 3
-            ? 'Se a recuperação estiver boa, faça 15 a 25 minutos de caminhada ou bicicleta leve a moderada, em 2 a 3 dias da semana.'
-            : planDetails.objectiveId === 5
-              ? 'Priorize pelo menos 2 sessões semanais de caminhada rápida, corrida leve ou bicicleta. Alterne dias fáceis e moderados para preservar a recuperação.'
-              : planDetails.objectiveId === 6 || planDetails.objectiveId === 7
-                ? 'Faça pelo menos 2 sessões semanais de caminhada, bicicleta ou dança em intensidade confortável a moderada. Distribua-as na semana e aumente a duração gradualmente.'
-                : planDetails.objectiveId === 1 || planDetails.objectiveId === 4
-                  ? 'Faça pelo menos 2 sessões semanais de caminhada ou bicicleta leve. Prefira os dias de descanso ou o final do treino de força para preservar a recuperação.'
-                : null,
+        'Após os exercícios de força, faça de 15 a 25 minutos de esteira, caminhada ou bicicleta em intensidade confortável. Comece leve e ajuste ao seu condicionamento.',
       frequenciaSemanal: planDetails.frequency,
       fase: planDetails.phase,
       treinosNoCombo: planDetails.workoutsInCombo,

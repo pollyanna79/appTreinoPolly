@@ -12,6 +12,8 @@ export interface Usuario {
 }
 
 export type WorkoutFocus =
+  | 'superiores'
+  | 'inferiores'
   | 'pernas-gluteos'
   | 'superiores-empurrar'
   | 'superiores-puxar'
@@ -37,6 +39,7 @@ export interface TreinoDia {
   id: number;
   diaSemana: number;
   nomeDia: string;
+  diaAerobico: boolean;
   exercicios: ExercicioTreino[];
 }
 

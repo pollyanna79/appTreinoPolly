@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">ABRA AS PERNAS</text><text x="595" y="52">UNA AS PERNAS</text></g>
+  <g fill="none" stroke="#718589" stroke-linecap="round" stroke-width="10"><path d="M80 306h232m-193 0v42m154-42v42m-114-90v47h77v-47m-77 0v-45m77 45v-45"/><path d="M470 306h232m-193 0v42m154-42v42m-114-90v47h77v-47m-77 0v-45m77 45v-45"/></g>
+  <g fill="#d9efeb" stroke="#17343a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="194" cy="112" r="22"/><path d="M194 136v53m0-31-28 26m28-26 28 26m-28 5-49 42m49-42 49 42" fill="none"/>
+    <circle cx="584" cy="112" r="22"/><path d="M584 136v53m0-31-28 26m28-26 28 26m-28 5-32 42m32-42 32 42" fill="none"/>
+  </g>
+  <path d="M145 226h-35m133 0h35m128 0h-34m133 0h34" stroke="#159a8c" stroke-width="8" stroke-linecap="round"/>
+  <path d="M56 365h287M446 365h287" stroke="#9cabad" stroke-width="6" stroke-linecap="round"/>
+</svg>

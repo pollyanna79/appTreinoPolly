@@ -283,6 +283,10 @@ button {
   line-height: 1.6;
 }
 
+.onboarding-stage {
+  scroll-margin-top: 24px;
+}
+
 .inline-alert {
   display: flex;
   align-items: center;
@@ -562,23 +566,46 @@ button {
 .exercise-image-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2px;
+  gap: 1px;
   overflow: hidden;
-  background: #fff;
+  background: #d7e1e3;
+}
+
+.exercise-image-grid--single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .exercise-image-frame {
   min-width: 0;
   margin: 0;
+  padding: 8px;
   background: #fff;
 }
 
 .exercise-image {
   display: block;
   width: 100%;
-  height: 190px;
+  height: clamp(140px, 18vw, 190px);
+  aspect-ratio: 4 / 3;
   object-fit: contain;
   background: #fff;
+}
+
+.exercise-image-caption {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.workout-complete-notice {
+  margin: 0 0 16px;
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--foreground);
 }
 
 .exercise-info {
@@ -613,17 +640,6 @@ button {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.65;
-}
-
-.exercise-credit-link {
-  display: inline-block;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.exercise-credit-link:hover {
-  color: var(--accent);
 }
 
 .finish-button {

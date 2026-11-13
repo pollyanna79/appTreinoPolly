@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">PÉ RELAXADO</text><text x="595" y="52">PUXE A PONTA</text></g>
+  <g fill="none" stroke="#718589" stroke-width="9" stroke-linecap="round"><path d="M86 328h228m162 0h228m-39-18v36m-390-36v36"/></g>
+  <g fill="none" stroke="#17343a" stroke-linecap="round" stroke-linejoin="round" stroke-width="12">
+    <circle cx="171" cy="116" r="23" fill="#d9efeb"/><path d="M171 142v97m0-62 45 29m-45-29-44 28m44 34-1 75m1-75 63 45"/>
+    <circle cx="561" cy="116" r="23" fill="#d9efeb"/><path d="M561 142v97m0-62 45 29m-45-29-44 28m44 34-1 75m1-75 65 18"/>
+  </g>
+  <path d="M259 330h54m279 0h-24m24 0 20-16m-20 16 21 15" stroke="#159a8c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M56 365h287M446 365h287" stroke="#9cabad" stroke-width="6" stroke-linecap="round"/>
+  <path d="M313 330q45 0 58 29m-58-29q46 0 58 29m217-29q-37 0-48 29" fill="none" stroke="#159a8c" stroke-width="5" stroke-dasharray="7 8"/>
+</svg>

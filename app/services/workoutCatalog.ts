@@ -1,173 +1,133 @@
 import sql from 'mssql';
 import type { WorkoutFocus } from './api';
 
-type WorkoutSplit = 'focus' | 'push' | 'pull' | 'legs' | 'shoulders-core' | 'full';
+type WorkoutSplit = 'upper-front' | 'upper-back' | 'lower-front' | 'lower-back';
 
 const exercises = [
-  { key: 'supino-reto', name: 'Supino reto com barra', muscle: 'Peito', photo: '/exercicios/fotos/supino-reto-inicio.png|/exercicios/fotos/supino-reto-final.png' },
-  { key: 'flexao-escapular', name: 'Flexão escapular', muscle: 'Peito', photo: '/exercicios/fotos/flexao-escapular-inicio.png|/exercicios/fotos/flexao-escapular-final.png' },
-  { key: 'supino-inclinado', name: 'Supino inclinado com barra', legacyNames: ['Supino inclinado com halteres'], muscle: 'Peito', photo: '/exercicios/fotos/supino-inclinado-inicio.png|/exercicios/fotos/supino-inclinado-final.png' },
-  { key: 'crossover', name: 'Crossover no cabo', legacyNames: ['Crucifixo no cabo', 'Crucifixo na máquina'], muscle: 'Peito', photo: '/exercicios/fotos/crossover-inicio.png|/exercicios/fotos/crossover-final.png' },
-  { key: 'peck-deck', name: 'Peck deck', muscle: 'Peito', photo: '/exercicios/fotos/peck-deck-inicio.png|/exercicios/fotos/peck-deck-final.png' },
-  { key: 'remada-curvada', name: 'Remada curvada', muscle: 'Costas', photo: '/exercicios/fotos/remada-curvada-inicio.png|/exercicios/fotos/remada-curvada-final.png' },
-  { key: 'puxada-frente', name: 'Puxada pela frente', muscle: 'Costas', photo: '/exercicios/fotos/puxada-frente-inicio.png|/exercicios/fotos/puxada-frente-final.webp' },
-  { key: 'remada-baixa', name: 'Remada baixa', muscle: 'Costas', photo: '/exercicios/fotos/remada-maquina-inicio.png|/exercicios/fotos/remada-maquina-final.png' },
-  { key: 'remada-unilateral', name: 'Remada unilateral no cabo', muscle: 'Costas', photo: '/exercicios/fotos/remada-unilateral-inicio.jpg|/exercicios/fotos/remada-unilateral-final.png' },
-  { key: 'remada-maquina', name: 'Remada sentada na máquina', muscle: 'Costas', photo: '/exercicios/fotos/remada-maquina-inicio.png|/exercicios/fotos/remada-maquina-final.png' },
-  { key: 'puxada-neutra', name: 'Puxada alta com pegada fechada', muscle: 'Costas', photo: '/exercicios/fotos/puxada-neutra-inicio.png|/exercicios/fotos/puxada-neutra-final.webp' },
-  { key: 'agachamento', name: 'Agachamento goblet', legacyNames: ['Agachamento livre'], muscle: 'Pernas', photo: '/exercicios/fotos/agachamento-inicio.jpeg|/exercicios/fotos/agachamento-final.jpeg' },
-  { key: 'hack-squat', name: 'Agachamento no hack', muscle: 'Pernas', photo: '/exercicios/fotos/hack-squat-inicio.png|/exercicios/fotos/hack-squat-final.png' },
-  { key: 'agachamento-frontal', name: 'Agachamento frontal com barra', muscle: 'Pernas', photo: '/exercicios/fotos/agachamento-frontal-inicio.png|/exercicios/fotos/agachamento-frontal-final.png' },
-  { key: 'agachamento-pistol', name: 'Agachamento pistol', muscle: 'Pernas', photo: '/exercicios/fotos/agachamento-pistol-inicio.jpg|/exercicios/fotos/agachamento-pistol-final.jpg' },
-  { key: 'afundo', name: 'Afundo alternado', muscle: 'Pernas', photo: '/exercicios/fotos/afundo-inicio.jfif|/exercicios/fotos/afundo-final.jfif' },
-  { key: 'afundo-caminhando', name: 'Afundo caminhando com halteres', muscle: 'Pernas e glúteos', photo: '/exercicios/fotos/afundo-caminhando-inicio.png|/exercicios/fotos/afundo-caminhando-final.png' },
-  { key: 'levantamento-rack', name: 'Levantamento terra com barra', muscle: 'Posterior de coxa e costas', photo: '/exercicios/fotos/levantamento-rack-inicio.png|/exercicios/fotos/levantamento-rack-final.png' },
-  { key: 'extensora', name: 'Cadeira extensora', muscle: 'Quadríceps', photo: '/exercicios/fotos/extensora-inicio.png|/exercicios/fotos/extensora-final.webp' },
-  { key: 'mesa-flexora', name: 'Mesa flexora', muscle: 'Posterior de coxa', photo: '/exercicios/fotos/mesa-flexora-inicio.png|/exercicios/fotos/mesa-flexora-final.png' },
-  { key: 'cadeira-flexora', name: 'Cadeira flexora', muscle: 'Posterior de coxa', photo: '/exercicios/fotos/cadeira-flexora-inicio.png|/exercicios/fotos/cadeira-flexora-final.png' },
-  { key: 'panturrilha', name: 'Panturrilha em pé', muscle: 'Panturrilhas', photo: '/exercicios/fotos/panturrilha-inicio.jpeg|/exercicios/fotos/panturrilha-final.jpeg' },
-  { key: 'desenvolvimento', name: 'Desenvolvimento com halteres', muscle: 'Ombros', photo: '/exercicios/fotos/desenvolvimento-inicio.png|/exercicios/fotos/desenvolvimento-final.png' },
-  { key: 'desenvolvimento-maquina', name: 'Desenvolvimento na máquina', muscle: 'Ombros', photo: '/exercicios/fotos/desenvolvimento-maquina-inicio.png|/exercicios/fotos/desenvolvimento-maquina-final.png' },
-  { key: 'elevacao-lateral', name: 'Elevação lateral', muscle: 'Ombros', photo: '/exercicios/fotos/elevacao-lateral-inicio.png|/exercicios/fotos/elevacao-lateral-final.png' },
-  { key: 'crucifixo-inverso', name: 'Crucifixo inverso inclinado', muscle: 'Ombros e costas', photo: '/exercicios/fotos/crucifixo-inverso-inicio.png|/exercicios/fotos/crucifixo-inverso-final.png' },
-  { key: 'rosca-direta', name: 'Rosca direta', muscle: 'Bíceps', photo: '/exercicios/fotos/rosca-direta-inicio.png|/exercicios/fotos/rosca-direta-final.png' },
-  { key: 'rosca-alternada', name: 'Rosca alternada com halteres', muscle: 'Bíceps', photo: '/exercicios/fotos/rosca-alternada-inicio.png|/exercicios/fotos/rosca-alternada-final.png' },
-  { key: 'rosca-martelo', name: 'Rosca martelo', muscle: 'Bíceps', photo: '/exercicios/fotos/rosca-martelo-inicio.png|/exercicios/fotos/rosca-martelo-final.png' },
-  { key: 'rosca-scott', name: 'Rosca Scott', muscle: 'Bíceps', photo: '/exercicios/fotos/rosca-scott-inicio.png|/exercicios/fotos/rosca-scott-final.png' },
-  { key: 'supino-fechado', name: 'Supino com pegada fechada', muscle: 'Peito e tríceps', photo: '/exercicios/fotos/supino-fechado-inicio.png|/exercicios/fotos/supino-fechado-final.png' },
-  { key: 'triceps-testa', name: 'Tríceps testa com barra H', muscle: 'Tríceps', photo: '/exercicios/fotos/triceps-testa-inicio.png|/exercicios/fotos/triceps-testa-final.png' },
-  { key: 'triceps-banco', name: 'Tríceps no banco', muscle: 'Tríceps', photo: '/exercicios/fotos/triceps-banco-inicio.png|/exercicios/fotos/triceps-banco-final.png' },
-  { key: 'prancha', name: 'Prancha', muscle: 'Abdômen', photo: '/exercicios/fotos/prancha-inicio.png|/exercicios/fotos/prancha-final.png' },
-  { key: 'abdominal-crunch', name: 'Abdominal crunch', muscle: 'Abdômen', photo: '/exercicios/fotos/abdominal-crunch-inicio.png|/exercicios/fotos/abdominal-crunch-final.png' },
-  { key: 'elevacao-pernas', name: 'Elevação de pernas deitado', muscle: 'Abdômen', photo: '/exercicios/fotos/elevacao-pernas-inicio.png|/exercicios/fotos/elevacao-pernas-final.png' },
-  { key: 'supino-halteres', name: 'Supino reto com halteres', muscle: 'Peito', photo: '/exercicios/fotos/supino-halteres-inicio.png|/exercicios/fotos/supino-halteres-final.png' },
-  { key: 'supino-maquina', name: 'Supino na máquina', muscle: 'Peito', photo: '/exercicios/fotos/supino-maquina-inicio.webp|/exercicios/fotos/supino-maquina-final.png' },
+  { key: 'supino-reto', name: 'Supino reto com barra', muscle: 'Peitoral' },
+  { key: 'flexao-escapular', name: 'Flexão escapular', muscle: 'Peitoral' },
+  { key: 'supino-inclinado', name: 'Supino inclinado com barra', legacyNames: ['Supino inclinado com halteres'], muscle: 'Peitoral' },
+  { key: 'crossover', name: 'Crossover no cabo', legacyNames: ['Crucifixo no cabo', 'Crucifixo na máquina'], muscle: 'Peitoral' },
+  { key: 'peck-deck', name: 'Peck deck', muscle: 'Peitoral' },
+  { key: 'remada-curvada', name: 'Remada curvada', muscle: 'Costas (dorsais, trapézio, romboides)' },
+  { key: 'puxada-frente', name: 'Puxada pela frente', muscle: 'Costas (dorsais, trapézio, romboides)' },
+  { key: 'remada-baixa', name: 'Remada baixa', muscle: 'Costas (dorsais, trapézio, romboides)' },
+  { key: 'remada-unilateral', name: 'Remada unilateral no cabo', muscle: 'Costas (dorsais, trapézio, romboides)' },
+  { key: 'remada-maquina', name: 'Remada sentada na máquina', muscle: 'Costas (dorsais, trapézio, romboides)' },
+  { key: 'puxada-neutra', name: 'Puxada alta com pegada fechada', muscle: 'Costas (dorsais, trapézio, romboides)' },
+  { key: 'agachamento', name: 'Agachamento goblet', legacyNames: ['Agachamento livre'], muscle: 'Quadríceps' },
+  { key: 'hack-squat', name: 'Agachamento no hack', muscle: 'Quadríceps' },
+  { key: 'agachamento-frontal', name: 'Agachamento frontal com barra', muscle: 'Quadríceps' },
+  { key: 'agachamento-pistol', name: 'Agachamento pistol', muscle: 'Quadríceps' },
+  { key: 'afundo', name: 'Afundo alternado', muscle: 'Quadríceps' },
+  { key: 'afundo-caminhando', name: 'Afundo caminhando com halteres', muscle: 'Glúteos' },
+  { key: 'levantamento-rack', name: 'Levantamento terra com barra', muscle: 'Isquiotibiais' },
+  { key: 'extensora', name: 'Cadeira extensora', muscle: 'Quadríceps' },
+  { key: 'mesa-flexora', name: 'Mesa flexora', muscle: 'Isquiotibiais' },
+  { key: 'cadeira-flexora', name: 'Cadeira flexora', muscle: 'Isquiotibiais' },
+  { key: 'panturrilha', name: 'Panturrilha em pé', muscle: 'Panturrilhas' },
+  { key: 'desenvolvimento', name: 'Desenvolvimento com halteres', muscle: 'Ombros (deltoide anterior/lateral)' },
+  { key: 'desenvolvimento-maquina', name: 'Desenvolvimento na máquina', muscle: 'Ombros (deltoide anterior/lateral)' },
+  { key: 'elevacao-lateral', name: 'Elevação lateral', muscle: 'Ombros (deltoide anterior/lateral)' },
+  { key: 'crucifixo-inverso', name: 'Crucifixo inverso inclinado', muscle: 'Ombros (deltoide posterior)' },
+  { key: 'rosca-direta', name: 'Rosca direta', muscle: 'Bíceps' },
+  { key: 'rosca-alternada', name: 'Rosca alternada com halteres', muscle: 'Bíceps' },
+  { key: 'rosca-martelo', name: 'Rosca martelo', muscle: 'Bíceps' },
+  { key: 'rosca-scott', name: 'Rosca Scott', muscle: 'Bíceps' },
+  { key: 'supino-fechado', name: 'Supino com pegada fechada', muscle: 'Tríceps' },
+  { key: 'triceps-testa', name: 'Tríceps testa com barra H', muscle: 'Tríceps' },
+  { key: 'triceps-banco', name: 'Tríceps no banco', muscle: 'Tríceps' },
+  { key: 'prancha', name: 'Prancha', muscle: 'Abdômen' },
+  { key: 'abdominal-crunch', name: 'Abdominal crunch', muscle: 'Abdômen' },
+  { key: 'elevacao-pernas', name: 'Elevação de pernas deitado', muscle: 'Abdômen' },
+  { key: 'supino-halteres', name: 'Supino reto com halteres', muscle: 'Peitoral' },
+  { key: 'supino-maquina', name: 'Supino na máquina', muscle: 'Peitoral' },
+  { key: 'face-pull', name: 'Face pull com corda', muscle: 'Ombros (deltoide posterior)' },
+  { key: 'adutora', name: 'Cadeira adutora', muscle: 'Adutores' },
+  { key: 'agachamento-sumo', name: 'Agachamento sumô com halter', muscle: 'Adutores' },
+  { key: 'tibial-parede', name: 'Elevação de ponta dos pés na parede', muscle: 'Tibial anterior' },
+  { key: 'tibial-faixa', name: 'Dorsiflexão com faixa elástica', muscle: 'Tibial anterior' },
+  { key: 'ponte-gluteos', name: 'Ponte de glúteos', muscle: 'Glúteos' },
+  { key: 'hip-thrust', name: 'Elevação pélvica (hip thrust)', muscle: 'Glúteos' },
+  { key: 'panturrilha-sentado', name: 'Panturrilha sentada', muscle: 'Panturrilhas' },
 ] as const;
 
-const sessionsByFrequency: Record<number, (keyof typeof sessionsByKey)[]> = {
-  2: ['full-a', 'full-b'],
-  3: ['full-a', 'full-b', 'full-c'],
-  4: ['upper-a', 'lower-a', 'upper-b', 'lower-b'],
-  5: ['push-a', 'pull-a', 'legs-a', 'upper-b', 'full-c'],
-  6: ['push-a', 'pull-a', 'legs-a', 'push-b', 'pull-b', 'legs-b'],
+type ExerciseKey = (typeof exercises)[number]['key'];
+
+const exerciseImages: Record<ExerciseKey, string> = {
+  'supino-reto': '/exercicios/fotos/supino-reto-inicio.png|/exercicios/fotos/supino-reto-final.png',
+  'flexao-escapular': '/exercicios/fotos/flexao-escapular-inicio.png|/exercicios/fotos/flexao-escapular-final.png',
+  'supino-inclinado': '/exercicios/fotos/supino-inclinado-inicio.png|/exercicios/fotos/supino-inclinado-final.png',
+  crossover: '/exercicios/fotos/crossover-inicio.png|/exercicios/fotos/crossover-final.png',
+  'peck-deck': '/exercicios/fotos/peck-deck-inicio.png|/exercicios/fotos/peck-deck-final.png',
+  'remada-curvada': '/exercicios/fotos/remada-curvada-inicio.png|/exercicios/fotos/remada-curvada-final.png',
+  'puxada-frente': '/exercicios/fotos/puxada-frente-inicio.png|/exercicios/fotos/puxada-frente-final.webp',
+  'remada-baixa': '/exercicios/fotos/remada-baixa.png',
+  'remada-unilateral': '/exercicios/ilustracoes/remada-unilateral.svg',
+  'remada-maquina': '/exercicios/fotos/remada-maquina-inicio.png|/exercicios/fotos/remada-maquina-final.png',
+  'puxada-neutra': '/exercicios/fotos/puxada-neutra-inicio.png|/exercicios/fotos/puxada-neutra-final.webp',
+  agachamento: '/exercicios/ilustracoes/agachamento-goblet.svg',
+  'hack-squat': '/exercicios/fotos/hack-squat-inicio.png|/exercicios/fotos/hack-squat-final.png',
+  'agachamento-frontal': '/exercicios/fotos/agachamento-frontal-inicio.png|/exercicios/fotos/agachamento-frontal-final.png',
+  'agachamento-pistol': '/exercicios/ilustracoes/agachamento-pistol.svg',
+  afundo: '/exercicios/ilustracoes/afundo.svg',
+  'afundo-caminhando': '/exercicios/fotos/afundo-caminhando-inicio.png|/exercicios/fotos/afundo-caminhando-final.png',
+  'levantamento-rack': '/exercicios/fotos/levantamento-rack-inicio.png|/exercicios/fotos/levantamento-rack-final.png',
+  extensora: '/exercicios/fotos/extensora-inicio.png|/exercicios/fotos/extensora-final.webp',
+  'mesa-flexora': '/exercicios/fotos/mesa-flexora-inicio.png|/exercicios/fotos/mesa-flexora-final.png',
+  'cadeira-flexora': '/exercicios/fotos/cadeira-flexora-inicio.png|/exercicios/fotos/cadeira-flexora-final.png',
+  panturrilha: '/exercicios/fotos/panturrilha-inicio.jpeg|/exercicios/fotos/panturrilha-final.jpeg',
+  desenvolvimento: '/exercicios/fotos/desenvolvimento-inicio.png|/exercicios/fotos/desenvolvimento-final.png',
+  'desenvolvimento-maquina': '/exercicios/fotos/desenvolvimento-maquina-inicio.png|/exercicios/fotos/desenvolvimento-maquina-final.png',
+  'elevacao-lateral': '/exercicios/fotos/elevacao-lateral-inicio.png|/exercicios/fotos/elevacao-lateral-final.png',
+  'crucifixo-inverso': '/exercicios/fotos/crucifixo-inverso-inicio.png|/exercicios/fotos/crucifixo-inverso-final.png',
+  'rosca-direta': '/exercicios/fotos/rosca-direta-inicio.png|/exercicios/fotos/rosca-direta-final.png',
+  'rosca-alternada': '/exercicios/fotos/rosca-alternada-inicio.png|/exercicios/fotos/rosca-alternada-final.png',
+  'rosca-martelo': '/exercicios/fotos/rosca-martelo-inicio.png|/exercicios/fotos/rosca-martelo-final.png',
+  'rosca-scott': '/exercicios/fotos/rosca-scott-inicio.png|/exercicios/fotos/rosca-scott-final.png',
+  'supino-fechado': '/exercicios/fotos/supino-fechado-inicio.png|/exercicios/fotos/supino-fechado-final.png',
+  'triceps-testa': '/exercicios/ilustracoes/triceps-testa.svg',
+  'triceps-banco': '/exercicios/fotos/triceps-banco-inicio.png|/exercicios/fotos/triceps-banco-final.png',
+  prancha: '/exercicios/fotos/prancha-inicio.png|/exercicios/fotos/prancha-final.png',
+  'abdominal-crunch': '/exercicios/fotos/abdominal-crunch-inicio.png|/exercicios/fotos/abdominal-crunch-final.png',
+  'elevacao-pernas': '/exercicios/fotos/elevacao-pernas-inicio.png|/exercicios/fotos/elevacao-pernas-final.png',
+  'supino-halteres': '/exercicios/fotos/supino-halteres-inicio.png|/exercicios/fotos/supino-halteres-final.png',
+  'supino-maquina': '/exercicios/fotos/supino-maquina-inicio.webp|/exercicios/fotos/supino-maquina-final.png',
+  'face-pull': '/exercicios/ilustracoes/face-pull.svg',
+  adutora: '/exercicios/ilustracoes/cadeira-adutora.svg',
+  'agachamento-sumo': '/exercicios/ilustracoes/agachamento-sumo.svg',
+  'tibial-parede': '/exercicios/ilustracoes/tibial-parede.svg',
+  'tibial-faixa': '/exercicios/ilustracoes/tibial-faixa.svg',
+  'ponte-gluteos': '/exercicios/ilustracoes/ponte-gluteos.svg',
+  'hip-thrust': '/exercicios/fotos/hip-thrust.webp',
+  'panturrilha-sentado': '/exercicios/ilustracoes/panturrilha-sentado.svg',
 };
 
 const weekdaysByFrequency: Record<number, number[]> = {
   2: [1, 4],
   3: [1, 3, 5],
   4: [1, 2, 4, 6],
-  5: [1, 2, 3, 4, 5],
-  6: [1, 2, 3, 4, 5, 6],
+  5: [1, 2, 4, 5, 6],
+  6: [1, 2, 3, 5, 6, 0],
+  7: [1, 2, 3, 4, 5, 6, 0],
 };
 
-const splitsByFrequency: Record<number, WorkoutSplit[]> = {
-  2: ['full', 'focus'],
-  3: ['focus', 'push', 'pull'],
-  4: ['push', 'pull', 'focus', 'shoulders-core'],
-  5: ['push', 'pull', 'focus', 'shoulders-core', 'full'],
-  6: ['push', 'pull', 'focus', 'push', 'pull', 'full'],
+const muscleGroupsBySplit: Record<WorkoutSplit, string[]> = {
+  'upper-front': ['Peitoral', 'Ombros (deltoide anterior/lateral)', 'Bíceps', 'Abdômen'],
+  'upper-back': ['Costas (dorsais, trapézio, romboides)', 'Ombros (deltoide posterior)', 'Tríceps'],
+  'lower-front': ['Quadríceps', 'Adutores', 'Tibial anterior'],
+  'lower-back': ['Isquiotibiais', 'Glúteos', 'Panturrilhas'],
 };
 
-const muscleGroupsBySplit: Record<Exclude<WorkoutSplit, 'focus'>, string[]> = {
-  push: ['Peito', 'Ombros', 'Tríceps', 'Peito e tríceps'],
-  pull: ['Costas', 'Bíceps', 'Ombros e costas', 'Posterior de coxa e costas'],
-  legs: [
-    'Pernas', 'Pernas e glúteos', 'Quadríceps', 'Posterior de coxa',
-    'Panturrilhas', 'Posterior de coxa e costas',
-  ],
-  'shoulders-core': ['Ombros', 'Ombros e costas', 'Abdômen'],
-  full: [...new Set(exercises.map((exercise) => exercise.muscle))],
+const splitLabels: Record<WorkoutSplit, string> = {
+  'upper-front': 'Superiores - Frente',
+  'upper-back': 'Superiores - Costas',
+  'lower-front': 'Inferiores - Frente',
+  'lower-back': 'Inferiores - Trás',
 };
-
-const focusSplit: Record<WorkoutFocus, Exclude<WorkoutSplit, 'focus'>> = {
-  'pernas-gluteos': 'legs',
-  'superiores-empurrar': 'push',
-  'superiores-puxar': 'pull',
-  'abdomen-core': 'shoulders-core',
-  'corpo-inteiro': 'full',
-};
-
-const splitLabels: Record<Exclude<WorkoutSplit, 'focus'>, string> = {
-  push: 'Superiores: empurrar',
-  pull: 'Superiores: puxar',
-  legs: 'Inferiores',
-  'shoulders-core': 'Ombros e core',
-  full: 'Corpo inteiro',
-};
-
-const focusLabels: Record<WorkoutFocus, string> = {
-  'pernas-gluteos': 'pernas e glúteos',
-  'superiores-empurrar': 'peito, ombros e tríceps',
-  'superiores-puxar': 'costas e bíceps',
-  'abdomen-core': 'abdômen e core',
-  'corpo-inteiro': 'corpo inteiro',
-};
-
-const sessionsByKey = {
-  'full-a': ['supino-reto', 'agachamento', 'remada-curvada', 'desenvolvimento', 'prancha'],
-  'full-b': ['supino-inclinado', 'levantamento-rack', 'puxada-frente', 'afundo', 'abdominal-crunch'],
-  'full-c': ['flexao-escapular', 'afundo-caminhando', 'remada-baixa', 'elevacao-lateral', 'rosca-direta'],
-  'upper-a': ['supino-reto', 'remada-curvada', 'supino-inclinado', 'desenvolvimento', 'supino-fechado'],
-  'lower-a': ['agachamento', 'hack-squat', 'levantamento-rack', 'afundo', 'prancha'],
-  'upper-b': ['supino-inclinado', 'puxada-frente', 'crossover', 'elevacao-lateral', 'rosca-direta'],
-  'lower-b': ['afundo-caminhando', 'levantamento-rack', 'agachamento-pistol', 'hack-squat', 'elevacao-pernas'],
-  'push-a': ['supino-reto', 'supino-inclinado', 'desenvolvimento', 'crossover', 'supino-fechado'],
-  'pull-a': ['remada-curvada', 'puxada-frente', 'remada-baixa', 'rosca-direta', 'abdominal-crunch'],
-  'legs-a': ['agachamento', 'hack-squat', 'afundo', 'levantamento-rack', 'panturrilha'],
-  'push-b': ['flexao-escapular', 'supino-inclinado', 'elevacao-lateral', 'desenvolvimento', 'triceps-testa'],
-  'pull-b': ['remada-baixa', 'puxada-neutra', 'remada-curvada', 'rosca-direta', 'prancha'],
-  'legs-b': ['agachamento-frontal', 'levantamento-rack', 'afundo-caminhando', 'extensora', 'elevacao-pernas'],
-} as const;
-
-const phaseTwoSessionsByKey = {
-  'full-a': ['flexao-escapular', 'hack-squat', 'remada-baixa', 'elevacao-lateral', 'abdominal-crunch'],
-  'full-b': ['supino-reto', 'afundo-caminhando', 'remada-curvada', 'rosca-direta', 'prancha'],
-  'full-c': ['supino-inclinado', 'agachamento-pistol', 'puxada-frente', 'supino-fechado', 'abdominal-crunch'],
-  'upper-a': ['supino-inclinado', 'puxada-neutra', 'desenvolvimento-maquina', 'elevacao-lateral', 'rosca-direta'],
-  'lower-a': ['hack-squat', 'afundo', 'extensora', 'mesa-flexora', 'elevacao-pernas'],
-  'upper-b': ['supino-halteres', 'remada-maquina', 'peck-deck', 'triceps-testa', 'rosca-scott'],
-  'lower-b': ['agachamento', 'levantamento-rack', 'hack-squat', 'cadeira-flexora', 'prancha'],
-  'push-a': ['supino-inclinado', 'flexao-escapular', 'elevacao-lateral', 'triceps-testa', 'desenvolvimento'],
-  'pull-a': ['remada-baixa', 'puxada-frente', 'remada-curvada', 'rosca-martelo', 'prancha'],
-  'legs-a': ['agachamento', 'afundo-caminhando', 'agachamento-pistol', 'hack-squat', 'mesa-flexora'],
-  'push-b': ['supino-maquina', 'crossover', 'desenvolvimento-maquina', 'supino-fechado', 'flexao-escapular'],
-  'pull-b': ['remada-curvada', 'puxada-neutra', 'remada-maquina', 'rosca-alternada', 'abdominal-crunch'],
-  'legs-b': ['hack-squat', 'levantamento-rack', 'afundo', 'panturrilha', 'elevacao-pernas'],
-} as const;
-
-const phaseThreeSessionsByKey = {
-  'full-a': ['supino-halteres', 'hack-squat', 'remada-unilateral', 'desenvolvimento-maquina', 'prancha'],
-  'full-b': ['supino-maquina', 'mesa-flexora', 'puxada-neutra', 'agachamento-frontal', 'abdominal-crunch'],
-  'full-c': ['crossover', 'extensora', 'remada-maquina', 'crucifixo-inverso', 'rosca-martelo'],
-  'upper-a': ['supino-halteres', 'remada-unilateral', 'supino-maquina', 'desenvolvimento-maquina', 'supino-fechado'],
-  'lower-a': ['hack-squat', 'extensora', 'mesa-flexora', 'levantamento-rack', 'panturrilha'],
-  'upper-b': ['crossover', 'puxada-neutra', 'peck-deck', 'crucifixo-inverso', 'rosca-scott'],
-  'lower-b': ['afundo-caminhando', 'cadeira-flexora', 'agachamento-pistol', 'agachamento-frontal', 'panturrilha'],
-  'push-a': ['supino-maquina', 'supino-halteres', 'desenvolvimento-maquina', 'peck-deck', 'supino-fechado'],
-  'pull-a': ['remada-unilateral', 'puxada-neutra', 'crucifixo-inverso', 'rosca-alternada', 'abdominal-crunch'],
-  'legs-a': ['hack-squat', 'extensora', 'levantamento-rack', 'afundo-caminhando', 'panturrilha'],
-  'push-b': ['crossover', 'flexao-escapular', 'desenvolvimento-maquina', 'triceps-banco', 'peck-deck'],
-  'pull-b': ['remada-maquina', 'remada-curvada', 'remada-unilateral', 'rosca-martelo', 'prancha'],
-  'legs-b': ['agachamento-frontal', 'mesa-flexora', 'agachamento-pistol', 'panturrilha', 'elevacao-pernas'],
-} as const;
-
-const phaseFourSessionsByKey = {
-  'full-a': ['peck-deck', 'agachamento-pistol', 'remada-maquina', 'crucifixo-inverso', 'elevacao-pernas'],
-  'full-b': ['flexao-escapular', 'levantamento-rack', 'remada-unilateral', 'afundo-caminhando', 'panturrilha'],
-  'full-c': ['supino-halteres', 'cadeira-flexora', 'puxada-neutra', 'rosca-scott', 'triceps-banco'],
-  'upper-a': ['supino-maquina', 'puxada-neutra', 'crossover', 'rosca-alternada', 'supino-fechado'],
-  'lower-a': ['agachamento-frontal', 'hack-squat', 'cadeira-flexora', 'afundo-caminhando', 'panturrilha'],
-  'upper-b': ['flexao-escapular', 'remada-maquina', 'peck-deck', 'crucifixo-inverso', 'triceps-banco'],
-  'lower-b': ['hack-squat', 'mesa-flexora', 'agachamento-pistol', 'levantamento-rack', 'panturrilha'],
-  'push-a': ['supino-halteres', 'flexao-escapular', 'crossover', 'supino-fechado', 'desenvolvimento-maquina'],
-  'pull-a': ['puxada-neutra', 'remada-maquina', 'remada-curvada', 'rosca-scott', 'elevacao-pernas'],
-  'legs-a': ['agachamento-frontal', 'extensora', 'cadeira-flexora', 'afundo', 'panturrilha'],
-  'push-b': ['supino-maquina', 'peck-deck', 'desenvolvimento-maquina', 'triceps-banco', 'flexao-escapular'],
-  'pull-b': ['remada-unilateral', 'crucifixo-inverso', 'puxada-neutra', 'rosca-alternada', 'abdominal-crunch'],
-  'legs-b': ['hack-squat', 'mesa-flexora', 'levantamento-rack', 'agachamento-pistol', 'elevacao-pernas'],
-} as const;
 
 const weekdayNames: Record<number, string> = {
+  0: 'Domingo',
   1: 'Segunda-feira',
   2: 'Terça-feira',
   3: 'Quarta-feira',
@@ -230,44 +190,67 @@ function getSuggestedWeight(goalId: number, exerciseKey: string): string {
   return 'Carga para terminar com 1 a 3 reps em reserva';
 }
 
-function getFocusSplit(focus: WorkoutFocus): Exclude<WorkoutSplit, 'focus'> {
-  return focusSplit[focus];
+function getSplitsForFrequency(
+  frequency: number,
+  focus: WorkoutFocus,
+  phase: number,
+): WorkoutSplit[] | undefined {
+  const weekdays = weekdaysByFrequency[frequency];
+  if (!weekdays) {
+    return undefined;
+  }
+
+  const lowerFocus = focus === 'inferiores' || focus === 'pernas-gluteos';
+  const neutralFocus = focus === 'abdomen-core' || focus === 'corpo-inteiro';
+  const base: WorkoutSplit[] = lowerFocus
+    ? ['lower-front', 'upper-front', 'lower-back', 'upper-back']
+    : ['upper-front', 'lower-front', 'upper-back', 'lower-back'];
+  const primaryFront = lowerFocus ? 'lower-front' : 'upper-front';
+  const primaryBack = lowerFocus ? 'lower-back' : 'upper-back';
+
+  if (frequency === 2) {
+    return lowerFocus
+      ? ['lower-front', 'lower-back']
+      : ['upper-front', 'upper-back'];
+  }
+
+  if (frequency === 3) {
+    if (neutralFocus) {
+      return ['upper-front', phase % 2 ? 'lower-back' : 'lower-front', 'upper-back'];
+    }
+    return lowerFocus
+      ? ['lower-front', 'lower-back', phase % 2 ? 'upper-back' : 'upper-front']
+      : ['upper-front', 'upper-back', phase % 2 ? 'lower-back' : 'lower-front'];
+  }
+
+  if (frequency === 4) {
+    return base;
+  }
+  if (frequency === 5) {
+    return [...base, primaryFront];
+  }
+  if (frequency === 6) {
+    return [...base, primaryFront, primaryBack];
+  }
+  return [...base, primaryFront, lowerFocus ? 'upper-front' : 'lower-front', primaryBack];
 }
 
 function getExerciseKeysForSplit(
   split: WorkoutSplit,
-  focus: WorkoutFocus,
-  preferredKeys: readonly string[],
-  phaseExercises: readonly string[],
   phase: number,
-  usedExercises: Set<string>,
+  workoutIndex: number,
 ): string[] {
-  const resolvedPreferredKeys = preferredKeys;
-  const rotateBy = resolvedPreferredKeys.length
-    ? Math.max(phase - 1, 0) % resolvedPreferredKeys.length
-    : 0;
-  const rotatedKeys = [
-    ...resolvedPreferredKeys.slice(rotateBy),
-    ...resolvedPreferredKeys.slice(0, rotateBy),
-  ];
-  const candidates = [
-    ...phaseExercises.filter((key) => resolvedPreferredKeys.includes(key)),
-    ...rotatedKeys,
-    ...exercises.map((exercise) => exercise.key),
-  ];
-  const selected: string[] = [];
-
-  for (const key of candidates) {
-    if (!usedExercises.has(key) && !selected.includes(key)) {
-      selected.push(key);
-      usedExercises.add(key);
-      if (selected.length === 6) {
-        return selected;
-      }
+  return muscleGroupsBySplit[split].flatMap((group) => {
+    const candidates = exercises.filter((exercise) => exercise.muscle === group);
+    if (candidates.length < 2) {
+      throw new Error(`O grupo muscular "${group}" precisa de pelo menos dois exercícios.`);
     }
-  }
-
-  throw new Error(`Não foi possível completar o treino "${split}" com seis exercícios.`);
+    const start = (Math.max(phase - 1, 0) + workoutIndex) % candidates.length;
+    return [
+      candidates[start].key,
+      candidates[(start + 1) % candidates.length].key,
+    ];
+  });
 }
 
 export async function ensureWorkoutPlan(
@@ -348,12 +331,17 @@ export async function ensureWorkoutPlan(
     END;
   `);
 
+  await new sql.Request(transaction).query(
+    "DBCC CHECKIDENT ('dbo.Exercicios', RESEED);",
+  );
+
   for (const exercise of exercises) {
+    const illustration = exerciseImages[exercise.key];
     for (const legacyName of 'legacyNames' in exercise ? exercise.legacyNames : []) {
       await new sql.Request(transaction)
         .input('legacyName', sql.VarChar(100), legacyName)
         .input('name', sql.VarChar(100), exercise.name)
-        .input('photo', sql.VarChar(255), exercise.photo)
+        .input('photo', sql.VarChar(255), illustration)
         .input('muscle', sql.VarChar(50), exercise.muscle)
         .query(`
           IF EXISTS (SELECT 1 FROM dbo.Exercicios WHERE nome = @legacyName)
@@ -372,7 +360,7 @@ export async function ensureWorkoutPlan(
 
     await new sql.Request(transaction)
       .input('name', sql.VarChar(100), exercise.name)
-      .input('photo', sql.VarChar(255), exercise.photo)
+      .input('photo', sql.VarChar(255), illustration)
       .input('muscle', sql.VarChar(50), exercise.muscle)
       .query(`
         IF EXISTS (SELECT 1 FROM dbo.Exercicios WHERE nome = @name)
@@ -395,60 +383,11 @@ export async function ensureWorkoutPlan(
     ]),
   );
 
-  const sessionKeys = sessionsByFrequency[frequency];
-  const splits = splitsByFrequency[frequency];
+  const splits = getSplitsForFrequency(frequency, focus, phase);
   const weekdays = weekdaysByFrequency[frequency];
-  const phaseCatalogs = [
-    sessionsByKey,
-    phaseTwoSessionsByKey,
-    phaseThreeSessionsByKey,
-    phaseFourSessionsByKey,
-  ] as const;
-  const phaseCatalog = phaseCatalogs[(Math.max(phase, 1) - 1) % phaseCatalogs.length];
 
-  if (!sessionKeys || !splits || !weekdays) {
+  if (!splits || !weekdays) {
     throw new Error('A frequência selecionada não possui um plano de treino.');
-  }
-
-  const queriedGroups = [
-    ...new Set(
-      splits.flatMap((split) =>
-        muscleGroupsBySplit[split === 'focus' ? getFocusSplit(focus) : split],
-      ),
-    ),
-  ];
-  const groupRequest = new sql.Request(transaction);
-  const groupParameters = queriedGroups.map((group, index) => {
-    const parameter = `muscle${index}`;
-    groupRequest.input(parameter, sql.VarChar(50), group);
-    return `@${parameter}`;
-  });
-  const exercisesByGroup = await groupRequest.query(`
-    SELECT nome, grupo_muscular
-    FROM dbo.Exercicios
-    WHERE grupo_muscular IN (${groupParameters.join(', ')})
-    ORDER BY nome
-  `);
-  const exerciseKeyByName = new Map<string, string>(
-    exercises.map((exercise) => [exercise.name, exercise.key]),
-  );
-  const preferredKeysBySplit: Record<Exclude<WorkoutSplit, 'focus'>, string[]> = {
-    push: [],
-    pull: [],
-    legs: [],
-    'shoulders-core': [],
-    full: [],
-  };
-  for (const row of exercisesByGroup.recordset) {
-    const key = exerciseKeyByName.get(row.nome);
-    if (!key) {
-      continue;
-    }
-    for (const split of Object.keys(preferredKeysBySplit) as Exclude<WorkoutSplit, 'focus'>[]) {
-      if (muscleGroupsBySplit[split].includes(row.grupo_muscular)) {
-        preferredKeysBySplit[split].push(key);
-      }
-    }
   }
 
   const existingCombos = await new sql.Request(transaction)
@@ -473,9 +412,7 @@ export async function ensureWorkoutPlan(
       ],
     ),
   );
-  const usedExercises = new Set<string>();
-
-  for (let index = 0; index < sessionKeys.length; index += 1) {
+  for (let index = 0; index < splits.length; index += 1) {
     const weekday = weekdays[index];
     let comboId = comboByWeekday.get(weekday);
 
@@ -497,19 +434,11 @@ export async function ensureWorkoutPlan(
       comboByWeekday.set(weekday, comboId);
     }
 
-    const session = sessionKeys[index];
-    const exerciseKeys = phaseCatalog[session as keyof typeof phaseCatalog];
     const workoutSplit = splits[index];
-    const resolvedSplit = workoutSplit === 'focus'
-      ? getFocusSplit(focus)
-      : workoutSplit;
     const desiredExerciseKeys = getExerciseKeysForSplit(
       workoutSplit,
-      focus,
-      preferredKeysBySplit[resolvedSplit],
-      exerciseKeys,
       phase,
-      usedExercises,
+      index,
     );
     const desiredExercises = desiredExerciseKeys.map((exerciseKey) => {
       const exercise = exercises.find((entry) => entry.key === exerciseKey);
@@ -919,12 +848,11 @@ export function getWorkoutSplitLabel(
   frequency: number,
   index: number,
   focus: WorkoutFocus,
+  phase: number,
 ): string {
-  const split = splitsByFrequency[frequency]?.[index];
+  const split = getSplitsForFrequency(frequency, focus, phase)?.[index];
   if (!split) {
     return 'Treino complementar';
   }
-  return split === 'focus'
-    ? `Ênfase: ${focusLabels[focus]}`
-    : splitLabels[split];
+  return splitLabels[split];
 }

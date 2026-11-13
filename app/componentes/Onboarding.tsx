@@ -1,25 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
 import type { Objetivo, WorkoutFocus } from '../services/api';
 import type { SetTela, SetUsuario, Usuario } from '../page';
 
 const focusOptionsByObjective: Record<number, { value: WorkoutFocus; label: string; description: string }[]> = {
   1: [
-    { value: 'pernas-gluteos', label: 'Pernas e glúteos', description: 'Mais volume para membros inferiores.' },
-    { value: 'superiores-empurrar', label: 'Peito, ombros e tríceps', description: 'Ênfase nos movimentos de empurrar.' },
-    { value: 'superiores-puxar', label: 'Costas e bíceps', description: 'Ênfase nos movimentos de puxar.' },
+    { value: 'superiores', label: 'Membros superiores', description: 'Prioriza peito, costas, braços e abdômen.' },
+    { value: 'inferiores', label: 'Membros inferiores', description: 'Prioriza pernas, glúteos e panturrilhas.' },
   ],
   2: [
+    { value: 'superiores', label: 'Membros superiores', description: 'Prioriza peito, costas, braços e abdômen.' },
+    { value: 'inferiores', label: 'Membros inferiores', description: 'Prioriza pernas, glúteos e panturrilhas.' },
     { value: 'abdomen-core', label: 'Abdômen e core', description: 'Inclui estabilidade e trabalho de core.' },
-    { value: 'corpo-inteiro', label: 'Corpo inteiro', description: 'Distribui o trabalho entre os principais grupos musculares.' },
+    { value: 'corpo-inteiro', label: 'Corpo inteiro', description: 'Alterna os quatro grupos de treino ao longo da semana.' },
   ],
 };
 
 function getDefaultFocus(objectiveId: number): WorkoutFocus {
-  return objectiveId === 1 ? 'pernas-gluteos' : objectiveId === 2 ? 'abdomen-core' : 'corpo-inteiro';
+  return objectiveId === 1 ? 'superiores' : objectiveId === 2 ? 'abdomen-core' : 'corpo-inteiro';
 }
+
+type OnboardingStep = 'objective' | 'focus' | 'frequency';
 
 export default function Onboarding({
   user,
@@ -34,14 +37,36 @@ export default function Onboarding({
     user.objetivo_id,
   );
   const [focoSelecionado, setFocoSelecionado] = useState<WorkoutFocus>(
-    user.foco_treino ?? (user.objetivo_id ? getDefaultFocus(user.objetivo_id) : 'corpo-inteiro'),
+    focusOptionsByObjective[user.objetivo_id ?? -1]?.some(
+      (option) => option.value === user.foco_treino,
+    )
+      ? user.foco_treino as WorkoutFocus
+      : user.objetivo_id
+        ? getDefaultFocus(user.objetivo_id)
+        : 'corpo-inteiro',
   );
-  const [frequencia, setFrequencia] = useState(user.frequencia_semanal ?? 3);
+  const [frequencia, setFrequencia] = useState(
+    Math.min(Math.max(user.frequencia_semanal ?? 3, 3), 7),
+  );
+  const [etapa, setEtapa] = useState<OnboardingStep>(() =>
+    user.objetivo_id
+      ? focusOptionsByObjective[user.objetivo_id]?.length
+        ? 'focus'
+        : 'frequency'
+      : 'objective',
+  );
   const [salvando, setSalvando] = useState(false);
   const [objetivos, setObjetivos] = useState<Objetivo[]>([]);
   const [carregandoObjetivos, setCarregandoObjetivos] = useState(true);
   const [erroObjetivos, setErroObjetivos] = useState('');
   const [tentativa, setTentativa] = useState(0);
+  const etapaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (etapa !== 'objective') {
+      etapaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [etapa]);
 
   useEffect(() => {
     let active = true;
@@ -107,13 +132,29 @@ export default function Onboarding({
   };
 
   const focusOptions = focusOptionsByObjective[objetivoSelecionado ?? -1] ?? [];
+  const focusQuestion =
+    objetivoSelecionado === 1
+      ? 'Qual região você quer priorizar para ganhar massa muscular?'
+      : 'Qual é sua principal zona de foco para tonificação ou gasto calórico?';
 
   return (
     <div className="onboarding-panel">
       <div className="section-heading">
         <p className="eyebrow">Personalize seu plano</p>
-        <h1 className="section-title">Qual é o seu objetivo, {user.nome.split(' ')[0]}?</h1>
-        <p className="section-copy">Vamos usar suas preferências para orientar sua jornada.</p>
+        <h1 className="section-title">
+          {etapa === 'objective'
+            ? `Qual é o seu objetivo, ${user.nome.split(' ')[0]}?`
+            : etapa === 'focus'
+              ? focusQuestion
+              : 'Quantos dias por semana você pretende treinar?'}
+        </h1>
+        <p className="section-copy">
+          {etapa === 'objective'
+            ? 'Escolha seu objetivo para continuar.'
+            : etapa === 'focus'
+              ? 'Agora escolha a região que deseja priorizar.'
+              : 'Escolha uma frequência entre 3 dias e todos os dias.'}
+        </p>
       </div>
 
       {carregandoObjetivos && (
@@ -139,33 +180,35 @@ export default function Onboarding({
           Nenhum objetivo foi encontrado na tabela dbo.Objetivos.
         </p>
       )}
-      <div className="goal-grid">
-        {objetivos.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className="goal-option"
-            aria-pressed={objetivoSelecionado === item.id}
-            onClick={() => {
-              if (objetivoSelecionado !== item.id) {
-                setFocoSelecionado(getDefaultFocus(item.id));
-              }
-              setObjetivoSelecionado(item.id);
-            }}
-          >
-            <h2 className="goal-title">{item.titulo}</h2>
-            <p className="goal-description">{item.descricao}</p>
-          </button>
-        ))}
-      </div>
+      {etapa === 'objective' && (
+        <div ref={etapaRef} className="onboarding-stage">
+          <div className="goal-grid">
+            {objetivos.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="goal-option"
+                aria-pressed={objetivoSelecionado === item.id}
+                onClick={() => {
+                  if (objetivoSelecionado !== item.id) {
+                    setFocoSelecionado(getDefaultFocus(item.id));
+                  }
+                  setObjetivoSelecionado(item.id);
+                  setEtapa(
+                    focusOptionsByObjective[item.id]?.length ? 'focus' : 'frequency',
+                  );
+                }}
+              >
+                <h2 className="goal-title">{item.titulo}</h2>
+                <p className="goal-description">{item.descricao}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
-      {focusOptions.length > 0 && (
-        <div className="frequency-section">
-          <h2 className="frequency-title">
-            {objetivoSelecionado === 1
-              ? 'Qual região você quer priorizar para ganhar massa muscular?'
-              : 'Qual é sua principal zona de foco para tonificação ou gasto calórico?'}
-          </h2>
+      {etapa === 'focus' && (
+        <div ref={etapaRef} className="onboarding-stage">
           <div className="goal-grid">
             {focusOptions.map((option) => (
               <button
@@ -173,41 +216,65 @@ export default function Onboarding({
                 type="button"
                 className="goal-option"
                 aria-pressed={focoSelecionado === option.value}
-                onClick={() => setFocoSelecionado(option.value)}
+                onClick={() => {
+                  setFocoSelecionado(option.value);
+                  setEtapa('frequency');
+                }}
               >
-                <h3 className="goal-title">{option.label}</h3>
+                <h2 className="goal-title">{option.label}</h2>
                 <p className="goal-description">{option.description}</p>
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => setEtapa('objective')}
+          >
+            Voltar para escolher o objetivo
+          </button>
         </div>
       )}
 
-      <div className="frequency-section">
-        <h2 className="frequency-title">Quantos dias por semana você pretende treinar?</h2>
-        <div className="frequency-row">
-          {[2, 3, 4, 5, 6].map((quantity) => (
-            <button
-              key={quantity}
-              type="button"
-              className="frequency-option"
-              aria-pressed={frequencia === quantity}
-              onClick={() => setFrequencia(quantity)}
-            >
-              {quantity}x
-            </button>
-          ))}
+      {etapa === 'frequency' && (
+        <div ref={etapaRef} className="onboarding-stage">
+          <div className="frequency-section">
+            <div className="frequency-row">
+              {[3, 4, 5, 6, 7].map((quantity) => (
+                <button
+                  key={quantity}
+                  type="button"
+                  className="frequency-option"
+                  aria-pressed={frequencia === quantity}
+                  onClick={() => setFrequencia(quantity)}
+                >
+                  {quantity === 7 ? 'Todo dia' : `${quantity}x`}
+                </button>
+              ))}
+            </div>
+            <p className="section-copy">
+              Os grupos alternam para permitir recuperação entre estímulos semelhantes.
+              Com 3 dias e foco em superiores, o plano inclui frente, costas e um treino
+              de inferiores alternado entre frente e trás.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => setEtapa(focusOptions.length ? 'focus' : 'objective')}
+          >
+            {focusOptions.length ? 'Voltar para alterar o foco' : 'Voltar para o objetivo'}
+          </button>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={handleSalvar}
+            disabled={salvando || carregandoObjetivos || !!erroObjetivos || objetivos.length === 0}
+          >
+            {salvando ? 'SALVANDO PREFERÊNCIAS...' : 'SALVAR E VER MEU TREINO'}
+          </button>
         </div>
-      </div>
-
-      <button
-        type="button"
-        className="primary-button"
-        onClick={handleSalvar}
-        disabled={salvando || carregandoObjetivos || !!erroObjetivos || objetivos.length === 0}
-      >
-        {salvando ? 'SALVANDO PREFERÊNCIAS...' : 'SALVAR E VER MEU TREINO'}
-      </button>
+      )}
     </div>
   );
 }

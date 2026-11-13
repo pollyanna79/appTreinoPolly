@@ -33,15 +33,16 @@ As opções da tela de objetivos são consultadas em `dbo.Objetivos`; cadastro,
 login, preferências e conclusão de treino usam as rotas `/api` do Next.js.
 Ao salvar as preferências, o app grava objetivo, ênfase muscular e frequência
 em `dbo.Usuarios` e sincroniza os exercícios e os dias do plano escolhido em
-`dbo.Exercicios`, `dbo.CombosTreino` e `dbo.ComboExercicios`. O plano organiza
-os treinos em divisões de empurrar, puxar, inferiores e core conforme os dias
-disponíveis, prioriza a região escolhida e evita repetir exercícios na semana.
-O complemento aeróbico recomenda 3 a 4 dias para emagrecimento e ao menos 2
-para os demais objetivos compatíveis com atividade aeróbica. Os planos aparecem
-após entrar com uma conta configurada.
+`dbo.Exercicios`, `dbo.CombosTreino` e `dbo.ComboExercicios`. A frequência pode
+ser de 3, 4, 5, 6 ou 7 dias por semana. Os treinos alternam Superiores - Frente,
+Superiores - Costas, Inferiores - Frente e Inferiores - Trás, com dois exercícios
+por grupo muscular de cada divisão. O aeróbico é sugerido após a força em um
+dos treinos semanais. As imagens dos exercícios são diagramas vetoriais
+padronizados, sem fotos de pessoas reais. Os planos aparecem após entrar com
+uma conta configurada.
 Para instâncias nomeadas, habilite TCP/IP no SQL Server Configuration Manager
 e, se necessário, o SQL Server Browser.
-A aplicação oferece 38 exercícios com pesos livres, máquinas, cabos e
+A aplicação oferece mais de 40 exercícios com pesos livres, máquinas, cabos e
 movimentos com peso corporal. Séries, repetições e orientação de carga variam
 conforme o objetivo salvo; a carga continua sendo uma recomendação por esforço,
 pois o app não conhece o peso que cada pessoa consegue levantar com segurança.
@@ -67,7 +68,6 @@ npm run dev
 
 Abra [http://localhost:3000](http://localhost:3000). Mantenha o comando
 `npm run dev` em execução enquanto usa o app; as rotas `/api` são servidas
-pelo próprio Next.js, sem um segundo servidor. As demonstrações locais em
-`public/exercicios/fotos` são servidas localmente; os créditos e licenças estão
-em `public/exercicios/CREDITOS.txt`. A alimentação é uma sugestão geral, não
-uma dieta clínica ou personalizada.
+pelo próprio Next.js, sem um segundo servidor. Os diagramas vetoriais usados
+nos treinos ficam em `public/exercicios/ilustracoes`. A alimentação é uma
+sugestão geral, não uma dieta clínica ou personalizada.

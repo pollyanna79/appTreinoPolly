@@ -8,12 +8,26 @@ import type { WorkoutFocus } from '../services/api';
 import type { SetTela, SetUsuario, Usuario } from '../page';
 
 const focusLabels: Record<WorkoutFocus, string> = {
+  superiores: 'membros superiores',
+  inferiores: 'membros inferiores',
   'pernas-gluteos': 'pernas e glúteos',
   'superiores-empurrar': 'peito, ombros e tríceps',
   'superiores-puxar': 'costas e bíceps',
   'abdomen-core': 'abdômen e core',
   'corpo-inteiro': 'corpo inteiro',
 };
+
+function getNextWorkoutId(
+  workouts: PlanoTreino['treinos'],
+  currentWorkoutId: number,
+): number | null {
+  if (workouts.length === 0) {
+    return null;
+  }
+
+  const currentIndex = workouts.findIndex((workout) => workout.id === currentWorkoutId);
+  return workouts[(currentIndex + 1) % workouts.length]?.id ?? workouts[0].id;
+}
 
 export default function Treino({
   user,
@@ -40,7 +54,11 @@ export default function Treino({
       .then((data) => {
         if (active) {
           setPlano(data);
-          setTreinoAtivo(data.treinoSelecionado);
+          setTreinoAtivo(
+            data.treinoConcluidoHoje
+              ? getNextWorkoutId(data.treinos, data.treinoSelecionado)
+              : data.treinoSelecionado,
+          );
           setConcluidoHoje(data.treinoConcluidoHoje);
           setErro('');
         }
@@ -73,6 +91,12 @@ export default function Treino({
       }
 
       const progress = await apiService.concluirTreino(user.id, activeWorkout.id);
+      const nextWorkoutId = plano
+        ? getNextWorkoutId(plano.treinos, activeWorkout.id)
+        : null;
+      if (nextWorkoutId !== null) {
+        setTreinoAtivo(nextWorkoutId);
+      }
       setUser((currentUser) =>
         currentUser ? { ...currentUser, ...progress } : currentUser,
       );
@@ -87,18 +111,26 @@ export default function Treino({
       );
       setConcluidoHoje(true);
 
+      let refreshError = '';
       if (progress.faseAlterada) {
         try {
           const nextPlan = await apiService.carregarTreino(user.id);
           setPlano(nextPlan);
-          setTreinoAtivo(nextPlan.treinoSelecionado);
+          setTreinoAtivo(
+            nextPlan.treinoConcluidoHoje
+              ? getNextWorkoutId(nextPlan.treinos, nextPlan.treinoSelecionado)
+              : nextPlan.treinoSelecionado,
+          );
           setConcluidoHoje(nextPlan.treinoConcluidoHoje);
-        } catch {
-          setTentativa((current) => current + 1);
+        } catch (error) {
+          refreshError =
+            error instanceof Error
+              ? `Não foi possível atualizar a próxima fase: ${error.message}`
+              : 'Não foi possível atualizar a próxima fase.';
         }
       }
 
-      alert(progress.message);
+      alert(refreshError ? `${progress.message}\n\n${refreshError}` : progress.message);
     } catch (error) {
       alert(
         error instanceof Error
@@ -219,7 +251,11 @@ export default function Treino({
           <div className="day-heading">
             <div>
               <p className="eyebrow">{activeWorkout.nomeDia}</p>
-              <h2 className="section-title">Treino {String.fromCharCode(65 + plano.treinos.indexOf(activeWorkout))}</h2>
+              <h2 className="section-title">
+                {concluidoHoje
+                  ? 'Próximo treino'
+                  : `Treino ${String.fromCharCode(65 + plano.treinos.indexOf(activeWorkout))}`}
+              </h2>
             </div>
             <button
               type="button"
@@ -230,23 +266,32 @@ export default function Treino({
             </button>
           </div>
 
+          {concluidoHoje && (
+            <p className="inline-alert workout-complete-notice" role="status">
+              Treino de hoje concluído. A próxima sessão é {activeWorkout.nomeDia}.
+            </p>
+          )}
+
           <div className="exercise-grid">
             {activeWorkout.exercicios.map((exercise) => (
               <article key={exercise.id} className="exercise-card">
-                <div className="exercise-image-grid">
-                  {exercise.imagem.split('|').map((image, imageIndex, images) => (
+                <div
+                  className={`exercise-image-grid${exercise.imagem.includes('|') ? '' : ' exercise-image-grid--single'}`}
+                >
+                  {exercise.imagem.split('|').filter(Boolean).map((image, index, images) => (
                     <figure className="exercise-image-frame" key={image}>
                       <Image
                         src={image}
-                        alt={
-                          images.length > 1
-                            ? `${exercise.nome}, demonstração ${imageIndex + 1} de ${images.length}`
-                            : `Demonstração do movimento: ${exercise.nome}`
-                        }
+                        alt={`${exercise.nome}${images.length > 1 ? ` — ${index === 0 ? 'início' : 'execução'}` : ''}`}
                         width={480}
                         height={360}
                         className="exercise-image"
                       />
+                      {images.length > 1 && (
+                        <figcaption className="exercise-image-caption">
+                          {index === 0 ? 'Início' : 'Execução'}
+                        </figcaption>
+                      )}
                     </figure>
                   ))}
                 </div>
@@ -262,7 +307,7 @@ export default function Treino({
             ))}
           </div>
 
-          {plano.aerobico && (
+          {activeWorkout.diaAerobico && plano.aerobico && (
             <aside className="cardio-panel">
               <span className="cardio-icon" aria-hidden="true">♡</span>
               <div>
@@ -276,15 +321,11 @@ export default function Treino({
           <p className="training-note">
             Use uma carga adequada ao seu nível e mantenha a execução controlada.
             Se sentir dor, interrompa o exercício.
+            {' '}
+            <a href="/exercicios/CREDITOS.txt" target="_blank" rel="noreferrer">
+              Créditos das ilustrações
+            </a>
           </p>
-          <a
-            className="exercise-credit-link"
-            href="/exercicios/CREDITOS.txt"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Créditos e licenças das imagens
-          </a>
           <button
             type="button"
             className="primary-button finish-button"

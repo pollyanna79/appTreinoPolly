@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">CALCANHAR ABAIXADO</text><text x="595" y="52">ELEVE O CALCANHAR</text></g>
+  <g fill="none" stroke="#718589" stroke-linecap="round" stroke-width="10"><path d="M95 291h208v17H95m42 17v34m126-34v34m-106-92v-49h95v49m-95 0 12 41m83-41-12 41"/><path d="M485 291h208v17H485m42 17v34m126-34v34m-106-92v-49h95v49m-95 0 7 28m83-28-7 28"/></g>
+  <g fill="#d9efeb" stroke="#17343a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="193" cy="105" r="22"/><path d="M193 130v85m0-58 45 22m-45-22-41 22m41 36 7 75m-7-75 63 40" fill="none"/>
+    <circle cx="583" cy="105" r="22"/><path d="M583 130v85m0-58 45 22m-45-22-41 22m41 36 2 58m-2-58 63 40" fill="none"/>
+  </g>
+  <path d="m246 349 14-18m367 18 14-18" stroke="#159a8c" stroke-width="8" stroke-linecap="round"/>
+</svg>

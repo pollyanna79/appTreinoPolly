@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">POSTURA ABERTA</text><text x="595" y="52">AGACHAMENTO</text></g>
+  <g fill="#d9efeb" stroke="#17343a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="205" cy="100" r="24"/><path d="M205 128v116m0-78-44 39m44-39 44 39m-44 39-72 92m72-92 72 92" fill="none"/>
+    <circle cx="595" cy="100" r="24"/><path d="m595 128-7 91m0-55-41 31m41-31 41 31m-41 24-89 45m89-45 89 45" fill="none"/>
+  </g>
+  <g fill="#159a8c" stroke="#17343a" stroke-width="7"><rect x="187" y="178" width="36" height="40" rx="8"/><rect x="577" y="157" width="36" height="40" rx="8"/></g>
+  <path d="M56 344h287M446 344h287" stroke="#9cabad" stroke-width="6" stroke-linecap="round"/>
+</svg>

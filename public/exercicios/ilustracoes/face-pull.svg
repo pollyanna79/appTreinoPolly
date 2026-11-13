@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">BRAÇOS À FRENTE</text><text x="595" y="52">PUXE À ALTURA DO ROSTO</text></g>
+  <g fill="none" stroke="#718589" stroke-linecap="round" stroke-width="8"><path d="M330 96v210m0-167-28 17m28-17 28 17M720 96v210m0-167-28 17m28-17 28 17"/><path d="M358 129H239m390 0H628" stroke="#159a8c" stroke-width="5"/></g>
+  <g fill="none" stroke="#17343a" stroke-linecap="round" stroke-linejoin="round" stroke-width="12">
+    <circle cx="181" cy="112" r="23" fill="#d9efeb"/><path d="M181 137v119m0-79 46-22m-46 22-46-22m46 101-35 88m35-88 38 88"/>
+    <circle cx="571" cy="112" r="23" fill="#d9efeb"/><path d="M571 137v119m0-79-39-22m39 22 39-22m-39 101-35 88m35-88 38 88"/>
+  </g>
+  <path d="m227 152 39-23m362 23-38-23" stroke="#159a8c" stroke-width="8" stroke-linecap="round"/>
+  <path d="M56 344h287M446 344h287" stroke="#9cabad" stroke-width="6" stroke-linecap="round"/>
+</svg>

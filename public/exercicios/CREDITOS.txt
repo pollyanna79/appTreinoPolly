@@ -170,3 +170,7 @@ https://wger.de/media/exercise-images/206/6ec66efd-e74f-4142-bed1-0a0ac74e3294.p
 Pistol Squat — wakanda90 — CC BY-SA 3.0
 https://wger.de/media/exercise-images/456/3b681e59-377b-40db-9113-ca5873ce084b.jpg
 https://wger.de/media/exercise-images/456/c51d875b-0c07-495e-a7cf-08893a9f125d.jpg
+
+As ilustrações SVG originais em public/exercicios/ilustracoes foram criadas
+para este projeto. As imagens do catálogo wger usadas no plano mantêm as
+atribuições e licenças indicadas acima.

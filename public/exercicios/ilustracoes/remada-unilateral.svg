@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">BRAÇO ESTENDIDO</text><text x="595" y="52">PUXE O HALTER</text></g>
+  <g fill="none" stroke="#17343a" stroke-linecap="round" stroke-linejoin="round" stroke-width="12">
+    <path d="M72 248h92v18H72m29 18v48m34-48v48" stroke="#718589" stroke-width="9"/>
+    <circle cx="206" cy="105" r="24" fill="#d9efeb"/><path d="m190 131-43 75 58 26m-58-26-26 77m84-51 49 90m-91-90-45 8m45-8 2-59m0 0 50-26"/>
+    <path d="M465 248h92v18h-92m29 18v48m34-48v48" stroke="#718589" stroke-width="9"/>
+    <circle cx="594" cy="105" r="24" fill="#d9efeb"/><path d="m578 131-42 75 58 26m-58-26-26 77m84-51 49 90m-91-90-45 8m45-8 2-59m0 0 45 14"/>
+  </g>
+  <g fill="#159a8c" stroke="#17343a" stroke-width="6"><rect x="250" y="230" width="24" height="43" rx="6"/><rect x="631" y="181" width="24" height="43" rx="6"/></g>
+  <path d="M56 344h287M446 344h287" stroke="#9cabad" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -9,8 +9,8 @@ import { ensureWorkoutPlan } from '@/app/services/workoutCatalog';
 import type { WorkoutFocus } from '@/app/services/api';
 
 const focusOptionsByObjective: Record<number, WorkoutFocus[]> = {
-  1: ['pernas-gluteos', 'superiores-empurrar', 'superiores-puxar'],
-  2: ['abdomen-core', 'corpo-inteiro'],
+  1: ['superiores', 'inferiores'],
+  2: ['superiores', 'inferiores', 'abdomen-core', 'corpo-inteiro'],
 };
 
 function isValidFocus(objectiveId: unknown, focus: unknown): focus is WorkoutFocus {
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     Number(body.userId) < 1 ||
     Number(body.objetivoId) < 1 ||
     Number(body.objetivoId) > 8 ||
-    Number(body.frequenciaSemanal) < 2 ||
-    Number(body.frequenciaSemanal) > 6
+    Number(body.frequenciaSemanal) < 3 ||
+    Number(body.frequenciaSemanal) > 7
   ) {
     return Response.json(
       { error: 'Confira o objetivo e a frequência semanal selecionados.' },

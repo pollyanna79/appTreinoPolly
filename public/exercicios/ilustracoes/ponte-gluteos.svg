@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440">
+  <rect width="800" height="440" rx="24" fill="#f3f7f8"/>
+  <g fill="#fff" stroke="#d7e1e3" stroke-width="2"><rect x="18" y="18" width="374" height="404" rx="18"/><rect x="408" y="18" width="374" height="404" rx="18"/></g>
+  <g fill="#62777b" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle"><text x="205" y="52">QUADRIL NO CHÃO</text><text x="595" y="52">ELEVE O QUADRIL</text></g>
+  <path d="M65 327h277m102 0h277" stroke="#9cabad" stroke-width="8" stroke-linecap="round"/>
+  <g fill="none" stroke="#17343a" stroke-linecap="round" stroke-linejoin="round" stroke-width="13">
+    <circle cx="112" cy="262" r="21" fill="#d9efeb"/><path d="m134 270 70 14 56 43m-56-43-27 43m-43-65 95-5"/>
+    <circle cx="502" cy="262" r="21" fill="#d9efeb"/><path d="m524 270 54-45 56 83m-56-83-33 83m-43-65 73-43"/>
+  </g>
+  <path d="M280 289v-48m-8 12 8-12 8 12m276 28v-48m-8 12 8-12 8 12" fill="none" stroke="#159a8c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
