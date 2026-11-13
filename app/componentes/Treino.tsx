@@ -4,7 +4,16 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import type { PlanoTreino } from '../services/api';
+import type { WorkoutFocus } from '../services/api';
 import type { SetTela, SetUsuario, Usuario } from '../page';
+
+const focusLabels: Record<WorkoutFocus, string> = {
+  'pernas-gluteos': 'pernas e glúteos',
+  'superiores-empurrar': 'peito, ombros e tríceps',
+  'superiores-puxar': 'costas e bíceps',
+  'abdomen-core': 'abdômen e core',
+  'corpo-inteiro': 'corpo inteiro',
+};
 
 export default function Treino({
   user,
@@ -148,7 +157,8 @@ export default function Treino({
           <p className="eyebrow">Seu plano salvo no banco de dados</p>
           <h1 className="workout-title">Vamos nessa, {user.nome.split(' ')[0]}.</h1>
           <p className="workout-subtitle">
-            {plano.objetivo} · {plano.frequenciaSemanal} treinos por semana · Fase {plano.fase}
+            {plano.objetivo} · foco em {focusLabels[plano.focoTreino]} ·{' '}
+            {plano.frequenciaSemanal} treinos por semana · Fase {plano.fase}
           </p>
         </div>
         <div className="workout-heading-actions">
@@ -243,6 +253,7 @@ export default function Treino({
                 <div className="exercise-info">
                   <h3 className="exercise-name">{exercise.nome}</h3>
                   <div className="exercise-details">
+                    <span className="detail-chip">{exercise.grupoMuscular}</span>
                     <span className="detail-chip">{exercise.repeticoes}</span>
                     <span className="detail-chip">{exercise.pesoSugerido}</span>
                   </div>

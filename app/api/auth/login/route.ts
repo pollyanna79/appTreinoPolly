@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import sql from 'mssql';
 import {
   databaseErrorResponse,
+  ensureUserFocusColumn,
   getDatabasePool,
   readJsonBody,
 } from '@/app/services/database';
@@ -23,11 +24,12 @@ export async function POST(request: Request) {
 
   try {
     const pool = await getDatabasePool();
+    await ensureUserFocusColumn(pool);
     const result = await pool
       .request()
       .input('email', sql.VarChar(150), body.email.trim().toLowerCase())
       .query(
-        'SELECT id, nome, email, senha, objetivo_id, frequencia_semanal, dias_concluidos, fase_combo FROM dbo.Usuarios WHERE email = @email',
+        'SELECT id, nome, email, senha, objetivo_id, foco_treino, frequencia_semanal, dias_concluidos, fase_combo FROM dbo.Usuarios WHERE email = @email',
       );
 
     if (result.recordset.length === 0) {
@@ -48,6 +50,7 @@ export async function POST(request: Request) {
       nome: user.nome,
       email: user.email,
       objetivo_id: user.objetivo_id,
+      foco_treino: user.foco_treino,
       frequencia_semanal: user.frequencia_semanal,
       dias_concluidos: user.dias_concluidos,
       fase_combo: user.fase_combo,

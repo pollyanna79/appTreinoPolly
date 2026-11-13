@@ -5,10 +5,18 @@ export interface Usuario {
   nome: string;
   email: string;
   objetivo_id: number | null;
+  foco_treino: WorkoutFocus | null;
   frequencia_semanal: number | null;
   dias_concluidos: number | null;
   fase_combo: number | null;
 }
+
+export type WorkoutFocus =
+  | 'pernas-gluteos'
+  | 'superiores-empurrar'
+  | 'superiores-puxar'
+  | 'abdomen-core'
+  | 'corpo-inteiro';
 
 export interface Objetivo {
   id: number;
@@ -34,6 +42,7 @@ export interface TreinoDia {
 
 export interface PlanoTreino {
   objetivo: string;
+  focoTreino: WorkoutFocus;
   aerobico: string | null;
   frequenciaSemanal: number;
   fase: number;
@@ -141,11 +150,13 @@ export const apiService = {
     userId: number,
     objetivoId: number,
     frequenciaSemanal: number,
+    focoTreino: WorkoutFocus,
   ) =>
     post<{ message: string }>('/user/onboarding', {
       userId,
       objetivoId,
       frequenciaSemanal,
+      focoTreino,
     }),
   concluirTreino: (userId: number, comboId: number) =>
     post<ProgressoTreino>('/treino/concluir', { userId, comboId }),

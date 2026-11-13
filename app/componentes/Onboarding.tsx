@@ -2,8 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
-import type { Objetivo } from '../services/api';
+import type { Objetivo, WorkoutFocus } from '../services/api';
 import type { SetTela, SetUsuario, Usuario } from '../page';
+
+const focusOptionsByObjective: Record<number, { value: WorkoutFocus; label: string; description: string }[]> = {
+  1: [
+    { value: 'pernas-gluteos', label: 'Pernas e glúteos', description: 'Mais volume para membros inferiores.' },
+    { value: 'superiores-empurrar', label: 'Peito, ombros e tríceps', description: 'Ênfase nos movimentos de empurrar.' },
+    { value: 'superiores-puxar', label: 'Costas e bíceps', description: 'Ênfase nos movimentos de puxar.' },
+  ],
+  2: [
+    { value: 'abdomen-core', label: 'Abdômen e core', description: 'Inclui estabilidade e trabalho de core.' },
+    { value: 'corpo-inteiro', label: 'Corpo inteiro', description: 'Distribui o trabalho entre os principais grupos musculares.' },
+  ],
+};
+
+function getDefaultFocus(objectiveId: number): WorkoutFocus {
+  return objectiveId === 1 ? 'pernas-gluteos' : objectiveId === 2 ? 'abdomen-core' : 'corpo-inteiro';
+}
 
 export default function Onboarding({
   user,
@@ -16,6 +32,9 @@ export default function Onboarding({
 }) {
   const [objetivoSelecionado, setObjetivoSelecionado] = useState<number | null>(
     user.objetivo_id,
+  );
+  const [focoSelecionado, setFocoSelecionado] = useState<WorkoutFocus>(
+    user.foco_treino ?? (user.objetivo_id ? getDefaultFocus(user.objetivo_id) : 'corpo-inteiro'),
   );
   const [frequencia, setFrequencia] = useState(user.frequencia_semanal ?? 3);
   const [salvando, setSalvando] = useState(false);
@@ -63,12 +82,18 @@ export default function Onboarding({
 
     setSalvando(true);
     try {
-      await apiService.salvarOnboarding(user.id, objetivoSelecionado, frequencia);
+      await apiService.salvarOnboarding(
+        user.id,
+        objetivoSelecionado,
+        frequencia,
+        focoSelecionado,
+      );
       setUser((currentUser) =>
         currentUser
           ? {
               ...currentUser,
               objetivo_id: objetivoSelecionado,
+              foco_treino: focoSelecionado,
               frequencia_semanal: frequencia,
             }
           : currentUser,
@@ -80,6 +105,8 @@ export default function Onboarding({
       setSalvando(false);
     }
   };
+
+  const focusOptions = focusOptionsByObjective[objetivoSelecionado ?? -1] ?? [];
 
   return (
     <div className="onboarding-panel">
@@ -119,13 +146,42 @@ export default function Onboarding({
             type="button"
             className="goal-option"
             aria-pressed={objetivoSelecionado === item.id}
-            onClick={() => setObjetivoSelecionado(item.id)}
+            onClick={() => {
+              if (objetivoSelecionado !== item.id) {
+                setFocoSelecionado(getDefaultFocus(item.id));
+              }
+              setObjetivoSelecionado(item.id);
+            }}
           >
             <h2 className="goal-title">{item.titulo}</h2>
             <p className="goal-description">{item.descricao}</p>
           </button>
         ))}
       </div>
+
+      {focusOptions.length > 0 && (
+        <div className="frequency-section">
+          <h2 className="frequency-title">
+            {objetivoSelecionado === 1
+              ? 'Qual região você quer priorizar para ganhar massa muscular?'
+              : 'Qual é sua principal zona de foco para tonificação ou gasto calórico?'}
+          </h2>
+          <div className="goal-grid">
+            {focusOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className="goal-option"
+                aria-pressed={focoSelecionado === option.value}
+                onClick={() => setFocoSelecionado(option.value)}
+              >
+                <h3 className="goal-title">{option.label}</h3>
+                <p className="goal-description">{option.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="frequency-section">
         <h2 className="frequency-title">Quantos dias por semana você pretende treinar?</h2>

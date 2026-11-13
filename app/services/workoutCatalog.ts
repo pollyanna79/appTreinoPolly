@@ -1,4 +1,7 @@
 import sql from 'mssql';
+import type { WorkoutFocus } from './api';
+
+type WorkoutSplit = 'focus' | 'push' | 'pull' | 'legs' | 'shoulders-core' | 'full';
 
 const exercises = [
   { key: 'supino-reto', name: 'Supino reto com barra', muscle: 'Peito', photo: '/exercicios/fotos/supino-reto-inicio.png|/exercicios/fotos/supino-reto-final.png' },
@@ -55,6 +58,49 @@ const weekdaysByFrequency: Record<number, number[]> = {
   4: [1, 2, 4, 6],
   5: [1, 2, 3, 4, 5],
   6: [1, 2, 3, 4, 5, 6],
+};
+
+const splitsByFrequency: Record<number, WorkoutSplit[]> = {
+  2: ['full', 'focus'],
+  3: ['focus', 'push', 'pull'],
+  4: ['push', 'pull', 'focus', 'shoulders-core'],
+  5: ['push', 'pull', 'focus', 'shoulders-core', 'full'],
+  6: ['push', 'pull', 'focus', 'push', 'pull', 'full'],
+};
+
+const muscleGroupsBySplit: Record<Exclude<WorkoutSplit, 'focus'>, string[]> = {
+  push: ['Peito', 'Ombros', 'Tríceps', 'Peito e tríceps'],
+  pull: ['Costas', 'Bíceps', 'Ombros e costas', 'Posterior de coxa e costas'],
+  legs: [
+    'Pernas', 'Pernas e glúteos', 'Quadríceps', 'Posterior de coxa',
+    'Panturrilhas', 'Posterior de coxa e costas',
+  ],
+  'shoulders-core': ['Ombros', 'Ombros e costas', 'Abdômen'],
+  full: [...new Set(exercises.map((exercise) => exercise.muscle))],
+};
+
+const focusSplit: Record<WorkoutFocus, Exclude<WorkoutSplit, 'focus'>> = {
+  'pernas-gluteos': 'legs',
+  'superiores-empurrar': 'push',
+  'superiores-puxar': 'pull',
+  'abdomen-core': 'shoulders-core',
+  'corpo-inteiro': 'full',
+};
+
+const splitLabels: Record<Exclude<WorkoutSplit, 'focus'>, string> = {
+  push: 'Superiores: empurrar',
+  pull: 'Superiores: puxar',
+  legs: 'Inferiores',
+  'shoulders-core': 'Ombros e core',
+  full: 'Corpo inteiro',
+};
+
+const focusLabels: Record<WorkoutFocus, string> = {
+  'pernas-gluteos': 'pernas e glúteos',
+  'superiores-empurrar': 'peito, ombros e tríceps',
+  'superiores-puxar': 'costas e bíceps',
+  'abdomen-core': 'abdômen e core',
+  'corpo-inteiro': 'corpo inteiro',
 };
 
 const sessionsByKey = {
@@ -121,22 +167,6 @@ const phaseFourSessionsByKey = {
   'legs-b': ['hack-squat', 'mesa-flexora', 'levantamento-rack', 'agachamento-pistol', 'elevacao-pernas'],
 } as const;
 
-const extraExerciseBySession: Record<string, string[]> = {
-  'full-a': ['rosca-alternada', 'panturrilha'],
-  'full-b': ['elevacao-lateral', 'panturrilha'],
-  'full-c': ['mesa-flexora', 'prancha'],
-  'upper-a': ['rosca-martelo', 'abdominal-crunch'],
-  'lower-a': ['panturrilha', 'elevacao-pernas'],
-  'upper-b': ['triceps-banco', 'abdominal-crunch'],
-  'lower-b': ['panturrilha', 'prancha'],
-  'push-a': ['triceps-testa', 'elevacao-lateral'],
-  'pull-a': ['rosca-martelo', 'prancha'],
-  'legs-a': ['panturrilha', 'elevacao-pernas'],
-  'push-b': ['triceps-banco', 'crossover'],
-  'pull-b': ['rosca-scott', 'abdominal-crunch'],
-  'legs-b': ['panturrilha', 'prancha'],
-};
-
 const weekdayNames: Record<number, string> = {
   1: 'Segunda-feira',
   2: 'Terça-feira',
@@ -200,11 +230,52 @@ function getSuggestedWeight(goalId: number, exerciseKey: string): string {
   return 'Carga para terminar com 1 a 3 reps em reserva';
 }
 
+function getFocusSplit(focus: WorkoutFocus): Exclude<WorkoutSplit, 'focus'> {
+  return focusSplit[focus];
+}
+
+function getExerciseKeysForSplit(
+  split: WorkoutSplit,
+  focus: WorkoutFocus,
+  preferredKeys: readonly string[],
+  phaseExercises: readonly string[],
+  phase: number,
+  usedExercises: Set<string>,
+): string[] {
+  const resolvedPreferredKeys = preferredKeys;
+  const rotateBy = resolvedPreferredKeys.length
+    ? Math.max(phase - 1, 0) % resolvedPreferredKeys.length
+    : 0;
+  const rotatedKeys = [
+    ...resolvedPreferredKeys.slice(rotateBy),
+    ...resolvedPreferredKeys.slice(0, rotateBy),
+  ];
+  const candidates = [
+    ...phaseExercises.filter((key) => resolvedPreferredKeys.includes(key)),
+    ...rotatedKeys,
+    ...exercises.map((exercise) => exercise.key),
+  ];
+  const selected: string[] = [];
+
+  for (const key of candidates) {
+    if (!usedExercises.has(key) && !selected.includes(key)) {
+      selected.push(key);
+      usedExercises.add(key);
+      if (selected.length === 6) {
+        return selected;
+      }
+    }
+  }
+
+  throw new Error(`Não foi possível completar o treino "${split}" com seis exercícios.`);
+}
+
 export async function ensureWorkoutPlan(
   transaction: sql.Transaction,
   objectiveId: number,
   frequency: number,
   phase: number,
+  focus: WorkoutFocus,
 ): Promise<void> {
   await new sql.Request(transaction).query(`
     DECLARE @lockResult int;
@@ -224,6 +295,58 @@ export async function ensureWorkoutPlan(
   if (objective.recordset.length === 0) {
     throw new Error('O objetivo escolhido não existe na tabela dbo.Objetivos.');
   }
+
+  await new sql.Request(transaction).query(`
+    IF COL_LENGTH(N'dbo.CombosTreino', N'foco_treino') IS NULL
+      ALTER TABLE dbo.CombosTreino
+        ADD foco_treino VARCHAR(30) NOT NULL
+          CONSTRAINT DF_CombosTreino_Foco DEFAULT 'geral';
+
+    DECLARE @comboIndex sysname;
+    DECLARE @isConstraint bit;
+    DECLARE @indexType nvarchar(60);
+    DECLARE @filter nvarchar(max);
+    DECLARE @ddl nvarchar(max);
+
+    SELECT TOP (1)
+      @comboIndex = i.name,
+      @isConstraint = i.is_unique_constraint,
+      @indexType = i.type_desc,
+      @filter = MAX(CONVERT(nvarchar(max), i.filter_definition))
+    FROM sys.indexes i
+    INNER JOIN sys.index_columns ic
+      ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+    INNER JOIN sys.columns c
+      ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+    WHERE i.object_id = OBJECT_ID(N'dbo.CombosTreino')
+      AND i.is_unique = 1
+      AND i.is_primary_key = 0
+      AND ic.key_ordinal > 0
+    GROUP BY i.name, i.is_unique_constraint, i.type_desc
+    HAVING COUNT(*) = 4
+      AND COUNT(DISTINCT c.name) = 4
+      AND SUM(CASE WHEN c.name IN (
+        N'objetivo_id', N'frequencia_semanal', N'fase', N'dia_semana_num'
+      ) THEN 1 ELSE 0 END) = 4;
+
+    IF @comboIndex IS NOT NULL
+    BEGIN
+      IF @isConstraint = 1
+        SET @ddl = N'ALTER TABLE dbo.CombosTreino DROP CONSTRAINT ' + QUOTENAME(@comboIndex);
+      ELSE
+        SET @ddl = N'DROP INDEX ' + QUOTENAME(@comboIndex) + N' ON dbo.CombosTreino';
+      EXEC sys.sp_executesql @ddl;
+
+      IF @isConstraint = 1
+        SET @ddl = N'ALTER TABLE dbo.CombosTreino ADD CONSTRAINT ' + QUOTENAME(@comboIndex) +
+          N' UNIQUE (objetivo_id, frequencia_semanal, fase, dia_semana_num, foco_treino)';
+      ELSE
+        SET @ddl = N'CREATE UNIQUE ' + @indexType + N' INDEX ' + QUOTENAME(@comboIndex) +
+          N' ON dbo.CombosTreino (objetivo_id, frequencia_semanal, fase, dia_semana_num, foco_treino)' +
+          COALESCE(N' WHERE ' + @filter, N'');
+      EXEC sys.sp_executesql @ddl;
+    END;
+  `);
 
   for (const exercise of exercises) {
     for (const legacyName of 'legacyNames' in exercise ? exercise.legacyNames : []) {
@@ -263,7 +386,7 @@ export async function ensureWorkoutPlan(
   }
 
   const exerciseRows = await new sql.Request(transaction).query(
-    'SELECT id, nome FROM dbo.Exercicios',
+    'SELECT id, nome, grupo_muscular FROM dbo.Exercicios',
   );
   const exerciseIds = new Map<string, number>(
     exerciseRows.recordset.map((exercise: { id: number; nome: string }) => [
@@ -273,6 +396,7 @@ export async function ensureWorkoutPlan(
   );
 
   const sessionKeys = sessionsByFrequency[frequency];
+  const splits = splitsByFrequency[frequency];
   const weekdays = weekdaysByFrequency[frequency];
   const phaseCatalogs = [
     sessionsByKey,
@@ -282,20 +406,63 @@ export async function ensureWorkoutPlan(
   ] as const;
   const phaseCatalog = phaseCatalogs[(Math.max(phase, 1) - 1) % phaseCatalogs.length];
 
-  if (!sessionKeys || !weekdays) {
+  if (!sessionKeys || !splits || !weekdays) {
     throw new Error('A frequência selecionada não possui um plano de treino.');
+  }
+
+  const queriedGroups = [
+    ...new Set(
+      splits.flatMap((split) =>
+        muscleGroupsBySplit[split === 'focus' ? getFocusSplit(focus) : split],
+      ),
+    ),
+  ];
+  const groupRequest = new sql.Request(transaction);
+  const groupParameters = queriedGroups.map((group, index) => {
+    const parameter = `muscle${index}`;
+    groupRequest.input(parameter, sql.VarChar(50), group);
+    return `@${parameter}`;
+  });
+  const exercisesByGroup = await groupRequest.query(`
+    SELECT nome, grupo_muscular
+    FROM dbo.Exercicios
+    WHERE grupo_muscular IN (${groupParameters.join(', ')})
+    ORDER BY nome
+  `);
+  const exerciseKeyByName = new Map<string, string>(
+    exercises.map((exercise) => [exercise.name, exercise.key]),
+  );
+  const preferredKeysBySplit: Record<Exclude<WorkoutSplit, 'focus'>, string[]> = {
+    push: [],
+    pull: [],
+    legs: [],
+    'shoulders-core': [],
+    full: [],
+  };
+  for (const row of exercisesByGroup.recordset) {
+    const key = exerciseKeyByName.get(row.nome);
+    if (!key) {
+      continue;
+    }
+    for (const split of Object.keys(preferredKeysBySplit) as Exclude<WorkoutSplit, 'focus'>[]) {
+      if (muscleGroupsBySplit[split].includes(row.grupo_muscular)) {
+        preferredKeysBySplit[split].push(key);
+      }
+    }
   }
 
   const existingCombos = await new sql.Request(transaction)
     .input('objectiveId', sql.Int, objectiveId)
     .input('frequency', sql.Int, frequency)
     .input('phase', sql.Int, phase)
+    .input('focus', sql.VarChar(30), focus)
     .query(`
       SELECT id, dia_semana_num
       FROM dbo.CombosTreino
       WHERE objetivo_id = @objectiveId
         AND frequencia_semanal = @frequency
         AND fase = @phase
+        AND foco_treino = @focus
     `);
 
   const comboByWeekday = new Map<number, number>(
@@ -306,6 +473,7 @@ export async function ensureWorkoutPlan(
       ],
     ),
   );
+  const usedExercises = new Set<string>();
 
   for (let index = 0; index < sessionKeys.length; index += 1) {
     const weekday = weekdays[index];
@@ -316,12 +484,13 @@ export async function ensureWorkoutPlan(
         .input('objectiveId', sql.Int, objectiveId)
         .input('frequency', sql.Int, frequency)
         .input('phase', sql.Int, phase)
+        .input('focus', sql.VarChar(30), focus)
         .input('weekday', sql.Int, weekday)
         .query(`
           INSERT INTO dbo.CombosTreino
-            (objetivo_id, frequencia_semanal, fase, dia_semana_num)
+            (objetivo_id, frequencia_semanal, fase, dia_semana_num, foco_treino)
           OUTPUT inserted.id
-          VALUES (@objectiveId, @frequency, @phase, @weekday)
+          VALUES (@objectiveId, @frequency, @phase, @weekday, @focus)
         `);
 
       comboId = combo.recordset[0].id as number;
@@ -330,16 +499,18 @@ export async function ensureWorkoutPlan(
 
     const session = sessionKeys[index];
     const exerciseKeys = phaseCatalog[session as keyof typeof phaseCatalog];
-    const desiredExerciseKeys: string[] = [...exerciseKeys];
-    if (desiredExerciseKeys.length < 6) {
-      const additionalExercise = extraExerciseBySession[session]?.find(
-        (exerciseKey) => !desiredExerciseKeys.includes(exerciseKey),
-      );
-      if (!additionalExercise) {
-        throw new Error(`Não foi possível completar o treino "${session}" com seis exercícios.`);
-      }
-      desiredExerciseKeys.push(additionalExercise);
-    }
+    const workoutSplit = splits[index];
+    const resolvedSplit = workoutSplit === 'focus'
+      ? getFocusSplit(focus)
+      : workoutSplit;
+    const desiredExerciseKeys = getExerciseKeysForSplit(
+      workoutSplit,
+      focus,
+      preferredKeysBySplit[resolvedSplit],
+      exerciseKeys,
+      phase,
+      usedExercises,
+    );
     const desiredExercises = desiredExerciseKeys.map((exerciseKey) => {
       const exercise = exercises.find((entry) => entry.key === exerciseKey);
       const exerciseId = exercise ? exerciseIds.get(exercise.name) : undefined;
@@ -408,6 +579,7 @@ async function ensureRotationHistoryTable(
         usuario_id INT NOT NULL,
         objetivo_id INT NOT NULL,
         frequencia_semanal INT NOT NULL,
+        foco_treino VARCHAR(30) NULL,
         fase INT NOT NULL,
         assinatura VARCHAR(2000) NOT NULL,
         inicio_treino_total INT NOT NULL,
@@ -430,6 +602,8 @@ async function ensureRotationHistoryTable(
     IF COL_LENGTH(N'dbo.UsuarioRotacaoTreinos', N'treinos_concluidos') IS NULL
       ALTER TABLE dbo.UsuarioRotacaoTreinos
         ADD treinos_concluidos INT NOT NULL CONSTRAINT DF_UsuarioRotacaoTreinos_Concluidos DEFAULT 0;
+    IF COL_LENGTH(N'dbo.UsuarioRotacaoTreinos', N'foco_treino') IS NULL
+      ALTER TABLE dbo.UsuarioRotacaoTreinos ADD foco_treino VARCHAR(30) NULL;
 
     IF OBJECT_ID(N'dbo.UsuarioTreinosConcluidos', N'U') IS NULL
     BEGIN
@@ -456,6 +630,7 @@ export async function prepareUserWorkoutRotation(
   frequency: number,
   savedPhase: number,
   totalCompletedWorkouts: number,
+  focus: WorkoutFocus,
 ): Promise<{ phase: number; workoutsInCombo: number }> {
   await ensureRotationHistoryTable(transaction);
 
@@ -479,6 +654,7 @@ export async function prepareUserWorkoutRotation(
         fase,
         objetivo_id,
         frequencia_semanal,
+        foco_treino,
         inicio_treino_total,
         treinos_concluidos
       FROM dbo.UsuarioRotacaoTreinos
@@ -491,6 +667,7 @@ export async function prepareUserWorkoutRotation(
         fase: number;
         objetivo_id: number;
         frequencia_semanal: number;
+        foco_treino: string | null;
         inicio_treino_total: number;
         treinos_concluidos: number;
       }
@@ -500,9 +677,10 @@ export async function prepareUserWorkoutRotation(
     active &&
     Number(active.objetivo_id) === objectiveId &&
     Number(active.frequencia_semanal) === frequency &&
+    active.foco_treino === focus &&
     Number(active.treinos_concluidos) < 60
   ) {
-    await ensureWorkoutPlan(transaction, objectiveId, frequency, Number(active.fase));
+    await ensureWorkoutPlan(transaction, objectiveId, frequency, Number(active.fase), focus);
     return {
       phase: Number(active.fase),
       workoutsInCombo: Math.max(0, Number(active.treinos_concluidos)),
@@ -527,22 +705,25 @@ export async function prepareUserWorkoutRotation(
   const recentHistory = await new sql.Request(transaction)
     .input('userId', sql.Int, userId)
     .input('totalCompleted', sql.Int, totalCompletedWorkouts)
+    .input('focus', sql.VarChar(30), focus)
     .query(`
       SELECT assinatura
       FROM dbo.UsuarioRotacaoTreinos
       WHERE usuario_id = @userId
         AND inicio_treino_total > @totalCompleted - 180
+        AND foco_treino = @focus
     `);
   const recentSignatures = new Set(
     recentHistory.recordset.map((row: { assinatura: string }) => row.assinatura),
   );
 
   for (let phase = nextPhase; phase < nextPhase + 100; phase += 1) {
-    await ensureWorkoutPlan(transaction, objectiveId, frequency, phase);
+    await ensureWorkoutPlan(transaction, objectiveId, frequency, phase, focus);
     const comboRows = await new sql.Request(transaction)
       .input('objectiveId', sql.Int, objectiveId)
       .input('frequency', sql.Int, frequency)
       .input('phase', sql.Int, phase)
+      .input('focus', sql.VarChar(30), focus)
       .query(`
         SELECT c.dia_semana_num, ce.exercicio_id
         FROM dbo.CombosTreino c
@@ -550,6 +731,7 @@ export async function prepareUserWorkoutRotation(
         WHERE c.objetivo_id = @objectiveId
           AND c.frequencia_semanal = @frequency
           AND c.fase = @phase
+          AND c.foco_treino = @focus
         ORDER BY c.dia_semana_num, ce.exercicio_id
       `);
     const signature = JSON.stringify(
@@ -570,12 +752,13 @@ export async function prepareUserWorkoutRotation(
       .input('objectiveId', sql.Int, objectiveId)
       .input('frequency', sql.Int, frequency)
       .input('phase', sql.Int, phase)
+      .input('focus', sql.VarChar(30), focus)
       .input('signature', sql.VarChar(2000), signature)
       .input('totalCompleted', sql.Int, totalCompletedWorkouts)
       .query(`
         INSERT INTO dbo.UsuarioRotacaoTreinos
-          (usuario_id, objetivo_id, frequencia_semanal, fase, assinatura, inicio_treino_total)
-        VALUES (@userId, @objectiveId, @frequency, @phase, @signature, @totalCompleted)
+          (usuario_id, objetivo_id, frequencia_semanal, foco_treino, fase, assinatura, inicio_treino_total)
+        VALUES (@userId, @objectiveId, @frequency, @focus, @phase, @signature, @totalCompleted)
 
         UPDATE dbo.Usuarios SET fase_combo = @phase WHERE id = @userId
       `);
@@ -632,6 +815,7 @@ export async function registerWorkoutCompletion(
     .query(`
       SELECT TOP (1)
         u.objetivo_id,
+        u.foco_treino,
         u.frequencia_semanal,
         u.fase_combo,
         u.dias_concluidos,
@@ -645,9 +829,11 @@ export async function registerWorkoutCompletion(
         AND c.objetivo_id = r.objetivo_id
         AND c.frequencia_semanal = r.frequencia_semanal
         AND c.fase = r.fase
+        AND c.foco_treino = r.foco_treino
       WHERE u.id = @userId
         AND u.objetivo_id = r.objetivo_id
         AND u.frequencia_semanal = r.frequencia_semanal
+        AND u.foco_treino = r.foco_treino
         AND r.treinos_concluidos < 60
     `);
 
@@ -714,6 +900,7 @@ export async function registerWorkoutCompletion(
     Number(active.recordset[0].frequencia_semanal),
     Number(row.fase),
     Number(row.totalCompleted),
+    active.recordset[0].foco_treino,
   );
 
   return {
@@ -726,4 +913,18 @@ export async function registerWorkoutCompletion(
 
 export function getWeekdayName(weekday: number): string {
   return weekdayNames[weekday] ?? `Dia ${weekday}`;
+}
+
+export function getWorkoutSplitLabel(
+  frequency: number,
+  index: number,
+  focus: WorkoutFocus,
+): string {
+  const split = splitsByFrequency[frequency]?.[index];
+  if (!split) {
+    return 'Treino complementar';
+  }
+  return split === 'focus'
+    ? `Ênfase: ${focusLabels[focus]}`
+    : splitLabels[split];
 }

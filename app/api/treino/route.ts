@@ -1,13 +1,16 @@
 import sql from 'mssql';
 import {
+  ensureUserFocusColumn,
   databaseErrorResponse,
   getDatabasePool,
 } from '@/app/services/database';
 import {
   hasCompletedWorkoutToday,
   getWeekdayName,
+  getWorkoutSplitLabel,
   prepareUserWorkoutRotation,
 } from '@/app/services/workoutCatalog';
+import type { WorkoutFocus } from '@/app/services/api';
 
 const weekdayNames = [
   'Domingo',
@@ -18,6 +21,18 @@ const weekdayNames = [
   'Sexta-feira',
   'Sábado',
 ];
+
+const validWorkoutFocuses: WorkoutFocus[] = [
+  'pernas-gluteos',
+  'superiores-empurrar',
+  'superiores-puxar',
+  'abdomen-core',
+  'corpo-inteiro',
+];
+
+function isWorkoutFocus(value: unknown): value is WorkoutFocus {
+  return validWorkoutFocuses.includes(value as WorkoutFocus);
+}
 
 export async function GET(request: Request) {
   const userId = Number(new URL(request.url).searchParams.get('userId'));
@@ -30,10 +45,12 @@ export async function GET(request: Request) {
 
   try {
     const pool = await getDatabasePool();
+    await ensureUserFocusColumn(pool);
     const transaction = new sql.Transaction(pool);
     await transaction.begin(sql.ISOLATION_LEVEL.SERIALIZABLE);
     let planDetails: {
       objectiveId: number;
+      focus: WorkoutFocus;
       frequency: number;
       phase: number;
       objective: string;
@@ -47,6 +64,7 @@ export async function GET(request: Request) {
         .query(`
           SELECT
             u.objetivo_id,
+            u.foco_treino,
             u.frequencia_semanal,
             ISNULL(u.dias_concluidos, 0) AS dias_concluidos,
             CASE
@@ -65,7 +83,12 @@ export async function GET(request: Request) {
       }
 
       const savedUser = userResult.recordset[0];
-      if (!savedUser.objetivo_id || !savedUser.frequencia_semanal || !savedUser.objetivo) {
+      if (
+        !savedUser.objetivo_id ||
+        !isWorkoutFocus(savedUser.foco_treino) ||
+        !savedUser.frequencia_semanal ||
+        !savedUser.objetivo
+      ) {
         await transaction.rollback();
         return Response.json(
           { error: 'Selecione seu objetivo e sua frequência para gerar o treino.' },
@@ -75,6 +98,7 @@ export async function GET(request: Request) {
 
       const objectiveId = Number(savedUser.objetivo_id);
       const frequency = Number(savedUser.frequencia_semanal);
+      const focus = savedUser.foco_treino;
       const rotation = await prepareUserWorkoutRotation(
         transaction,
         userId,
@@ -82,9 +106,11 @@ export async function GET(request: Request) {
         frequency,
         Number(savedUser.fase_combo),
         Number(savedUser.dias_concluidos),
+        focus,
       );
       planDetails = {
         objectiveId,
+        focus,
         frequency,
         phase: rotation.phase,
         objective: savedUser.objetivo,
@@ -106,6 +132,7 @@ export async function GET(request: Request) {
       .input('objectiveId', sql.Int, planDetails.objectiveId)
       .input('frequency', sql.Int, planDetails.frequency)
       .input('phase', sql.Int, planDetails.phase)
+      .input('focus', sql.VarChar(30), planDetails.focus)
       .query(`
         SELECT
           c.id AS comboId,
@@ -122,6 +149,7 @@ export async function GET(request: Request) {
         WHERE c.objetivo_id = @objectiveId
           AND c.frequencia_semanal = @frequency
           AND c.fase = @phase
+          AND c.foco_treino = @focus
         ORDER BY c.dia_semana_num, ce.id
       `);
 
@@ -172,21 +200,32 @@ export async function GET(request: Request) {
       );
     }
 
+    treinos.forEach((workout, index) => {
+      workout.nomeDia = `${getWeekdayName(workout.diaSemana)} · ${getWorkoutSplitLabel(
+        planDetails.frequency,
+        index,
+        planDetails.focus,
+      )}`;
+    });
+
     const todayWeekday = new Date().getDay();
     const nextWorkout =
       treinos.find((workout) => workout.diaSemana === todayWeekday) ?? treinos[0];
 
     return Response.json({
       objetivo: planDetails.objective,
+      focoTreino: planDetails.focus,
       aerobico:
         planDetails.objectiveId === 2
-          ? 'Inclua caminhada rápida, bicicleta ou elíptico por 20 a 30 minutos, de 2 a 4 vezes na semana, em intensidade moderada. Comece pelo mínimo confortável e aumente aos poucos.'
+          ? 'Faça caminhada rápida, bicicleta ou elíptico por 20 a 30 minutos, em 3 a 4 dias da semana. Você pode distribuir as sessões nos dias de descanso ou ao final da força; comece pelo mínimo confortável e aumente aos poucos.'
           : planDetails.objectiveId === 3
-            ? 'Se a recuperação estiver boa, faça 15 a 25 minutos de caminhada ou bicicleta leve a moderada, 2 a 3 vezes na semana.'
+            ? 'Se a recuperação estiver boa, faça 15 a 25 minutos de caminhada ou bicicleta leve a moderada, em 2 a 3 dias da semana.'
             : planDetails.objectiveId === 5
-              ? 'Priorize 2 a 3 sessões semanais de caminhada rápida, corrida leve ou bicicleta. Alterne dias fáceis e moderados para preservar a recuperação.'
+              ? 'Priorize pelo menos 2 sessões semanais de caminhada rápida, corrida leve ou bicicleta. Alterne dias fáceis e moderados para preservar a recuperação.'
               : planDetails.objectiveId === 6 || planDetails.objectiveId === 7
-                ? 'Caminhada, bicicleta ou dança em intensidade confortável a moderada são boas opções. Distribua as sessões na semana e aumente a duração gradualmente.'
+                ? 'Faça pelo menos 2 sessões semanais de caminhada, bicicleta ou dança em intensidade confortável a moderada. Distribua-as na semana e aumente a duração gradualmente.'
+                : planDetails.objectiveId === 1 || planDetails.objectiveId === 4
+                  ? 'Faça pelo menos 2 sessões semanais de caminhada ou bicicleta leve. Prefira os dias de descanso ou o final do treino de força para preservar a recuperação.'
                 : null,
       frequenciaSemanal: planDetails.frequency,
       fase: planDetails.phase,

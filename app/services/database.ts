@@ -86,6 +86,48 @@ export async function getDatabasePool(): Promise<sql.ConnectionPool> {
   return poolPromise;
 }
 
+export async function ensureUserFocusColumn(
+  connection: sql.ConnectionPool | sql.Transaction,
+): Promise<void> {
+  const request =
+    connection instanceof sql.Transaction
+      ? new sql.Request(connection)
+      : connection.request();
+  await request.query(`
+    DECLARE @lockResult int;
+    EXEC @lockResult = sys.sp_getapplock
+      @Resource = N'app-treino-user-focus-schema',
+      @LockMode = N'Exclusive',
+      @LockOwner = N'Session',
+      @LockTimeout = 10000;
+    IF @lockResult < 0
+      THROW 51002, 'Não foi possível preparar as preferências do usuário.', 1;
+
+    BEGIN TRY
+      IF COL_LENGTH(N'dbo.Usuarios', N'foco_treino') IS NULL
+        ALTER TABLE dbo.Usuarios ADD foco_treino VARCHAR(30) NULL;
+
+      IF EXISTS (SELECT 1 FROM dbo.Usuarios WHERE foco_treino IS NULL)
+        UPDATE dbo.Usuarios
+        SET foco_treino = CASE
+          WHEN objetivo_id = 1 THEN 'pernas-gluteos'
+          ELSE 'corpo-inteiro'
+        END
+        WHERE foco_treino IS NULL;
+
+      EXEC sys.sp_releaseapplock
+        @Resource = N'app-treino-user-focus-schema',
+        @LockOwner = N'Session';
+    END TRY
+    BEGIN CATCH
+      EXEC sys.sp_releaseapplock
+        @Resource = N'app-treino-user-focus-schema',
+        @LockOwner = N'Session';
+      THROW;
+    END CATCH;
+  `);
+}
+
 export async function readJsonBody(
   request: Request,
 ): Promise<Record<string, unknown> | null> {

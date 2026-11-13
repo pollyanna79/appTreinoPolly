@@ -1,10 +1,25 @@
 import sql from 'mssql';
 import {
   databaseErrorResponse,
+  ensureUserFocusColumn,
   getDatabasePool,
   readJsonBody,
 } from '@/app/services/database';
 import { ensureWorkoutPlan } from '@/app/services/workoutCatalog';
+import type { WorkoutFocus } from '@/app/services/api';
+
+const focusOptionsByObjective: Record<number, WorkoutFocus[]> = {
+  1: ['pernas-gluteos', 'superiores-empurrar', 'superiores-puxar'],
+  2: ['abdomen-core', 'corpo-inteiro'],
+};
+
+function isValidFocus(objectiveId: unknown, focus: unknown): focus is WorkoutFocus {
+  if (!Number.isInteger(objectiveId) || typeof focus !== 'string') {
+    return false;
+  }
+  const options = focusOptionsByObjective[Number(objectiveId)] ?? ['corpo-inteiro'];
+  return options.includes(focus as WorkoutFocus);
+}
 
 export async function POST(request: Request) {
   const body = await readJsonBody(request);
@@ -13,6 +28,7 @@ export async function POST(request: Request) {
     !Number.isInteger(body.userId) ||
     !Number.isInteger(body.objetivoId) ||
     !Number.isInteger(body.frequenciaSemanal) ||
+    !isValidFocus(body.objetivoId, body.focoTreino) ||
     Number(body.userId) < 1 ||
     Number(body.objetivoId) < 1 ||
     Number(body.objetivoId) > 8 ||
@@ -31,15 +47,18 @@ export async function POST(request: Request) {
     await transaction.begin();
 
     try {
+      await ensureUserFocusColumn(transaction);
       const result = await new sql.Request(transaction)
         .input('userId', sql.Int, Number(body.userId))
         .input('objetivoId', sql.Int, Number(body.objetivoId))
         .input('frequencia', sql.Int, Number(body.frequenciaSemanal))
+        .input('focus', sql.VarChar(30), body.focoTreino)
         .query(`
           UPDATE dbo.Usuarios
           SET
             objetivo_id = @objetivoId,
             frequencia_semanal = @frequencia,
+            foco_treino = @focus,
             fase_combo = CASE
               WHEN ISNULL(fase_combo, 0) < 1 THEN 1
               ELSE fase_combo
@@ -62,6 +81,7 @@ export async function POST(request: Request) {
         Number(body.objetivoId),
         Number(body.frequenciaSemanal),
         phase,
+        body.focoTreino,
       );
       await transaction.commit();
 

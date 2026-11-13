@@ -22,17 +22,23 @@ O usuário SQL precisa ter permissão de leitura e gravação nas tabelas
 `dbo.Usuarios`, `dbo.Exercicios`, `dbo.CombosTreino`, `dbo.ComboExercicios`
 e `dbo.PlanosAlimentares`, além de leitura em `dbo.Objetivos`. Na primeira
 consulta ao treino, a aplicação também cria `dbo.UsuarioRotacaoTreinos`; para
-isso, o usuário SQL precisa poder criar tabelas e índices no schema `dbo`.
+isso, o usuário SQL precisa poder criar e alterar tabelas e índices no schema `dbo`.
 A tabela `dbo.UsuarioTreinosConcluidos` também é criada automaticamente.
 A aplicação usa
 as colunas `id`, `nome`, `email`, `senha`,
-`objetivo_id`, `frequencia_semanal`, `dias_concluidos` e `fase_combo`.
+`objetivo_id`, `frequencia_semanal`, `dias_concluidos`, `fase_combo` e
+`foco_treino`. A aplicação adiciona `foco_treino` a `dbo.Usuarios`,
+`dbo.CombosTreino` e `dbo.UsuarioRotacaoTreinos` quando necessário.
 As opções da tela de objetivos são consultadas em `dbo.Objetivos`; cadastro,
 login, preferências e conclusão de treino usam as rotas `/api` do Next.js.
-Ao salvar as preferências, o app grava objetivo e frequência em `dbo.Usuarios`
-e sincroniza os exercícios e os dias do plano escolhido em `dbo.Exercicios`,
-`dbo.CombosTreino` e `dbo.ComboExercicios`. Os planos aparecem após entrar com
-uma conta configurada.
+Ao salvar as preferências, o app grava objetivo, ênfase muscular e frequência
+em `dbo.Usuarios` e sincroniza os exercícios e os dias do plano escolhido em
+`dbo.Exercicios`, `dbo.CombosTreino` e `dbo.ComboExercicios`. O plano organiza
+os treinos em divisões de empurrar, puxar, inferiores e core conforme os dias
+disponíveis, prioriza a região escolhida e evita repetir exercícios na semana.
+O complemento aeróbico recomenda 3 a 4 dias para emagrecimento e ao menos 2
+para os demais objetivos compatíveis com atividade aeróbica. Os planos aparecem
+após entrar com uma conta configurada.
 Para instâncias nomeadas, habilite TCP/IP no SQL Server Configuration Manager
 e, se necessário, o SQL Server Browser.
 A aplicação oferece 38 exercícios com pesos livres, máquinas, cabos e
